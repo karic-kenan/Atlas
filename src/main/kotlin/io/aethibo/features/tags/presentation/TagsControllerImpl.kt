@@ -6,8 +6,8 @@ import io.ktor.server.application.*
 import io.ktor.server.response.*
 
 class TagsControllerImpl(private val tagService: TagsService) : TagsController {
-    override suspend fun get(ctx: ApplicationCall) =
+    override suspend fun get(call: ApplicationCall) =
         tagService.findAll().also { tagDto ->
-            ctx.respond(tagDto)
+            call.respond(tagDto)
         }
 }

@@ -16,8 +16,12 @@ object Login : AtlasDestination {
     override val route: String = "login"
 }
 
-object Tags : AtlasDestination {
-    override val route: String = "tags"
+object Profile : AtlasDestination {
+    override val route: String = "profiles/{username}"
+}
+
+object Follow : AtlasDestination {
+    override val route: String = "follow"
 }
 
 object Articles : AtlasDestination {
@@ -42,4 +46,8 @@ object CommentId : AtlasDestination {
 
 object Favorite : AtlasDestination {
     override val route: String = "favorite"
+}
+
+object Tags : AtlasDestination {
+    override val route: String = "tags"
 }

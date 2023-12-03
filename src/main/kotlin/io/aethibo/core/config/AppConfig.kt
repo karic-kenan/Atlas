@@ -8,6 +8,9 @@ import io.aethibo.features.articles.domain.controller.ArticlesController
 import io.aethibo.features.articles.presentation.articles
 import io.aethibo.features.comments.data.di.commentsModule
 import io.aethibo.features.comments.domain.controller.CommentsController
+import io.aethibo.features.profiles.data.di.profilesModule
+import io.aethibo.features.profiles.domain.controller.ProfilesController
+import io.aethibo.features.profiles.presentation.profiles
 import io.aethibo.features.tags.data.di.tagsModule
 import io.aethibo.features.tags.domain.controller.TagsController
 import io.aethibo.features.tags.presentation.tags
@@ -44,6 +47,7 @@ fun Application.mainModule() {
 
     val jwtProvider: JwtProvider by inject()
     val userController: UsersController by inject()
+    val profileController: ProfilesController by inject()
     val articleController: ArticlesController by inject()
     val commentController: CommentsController by inject()
     val tagController: TagsController by inject()
@@ -80,6 +84,7 @@ fun Application.mainModule() {
         modules(
             appModule,
             usersModule,
+            profilesModule,
             articlesModule,
             commentsModule,
             tagsModule
@@ -113,6 +118,7 @@ fun Application.mainModule() {
     }
     install(Routing) {
         users(userController)
+        profiles(profileController)
         articles(articleController, commentController)
         tags(tagController)
     }

@@ -4,5 +4,5 @@ import io.aethibo.features.tags.domain.model.TagDTO
 import io.ktor.server.application.*
 
 interface TagsController {
-    suspend fun get(ctx: ApplicationCall): TagDTO
+    suspend fun get(call: ApplicationCall): TagDTO
 }
