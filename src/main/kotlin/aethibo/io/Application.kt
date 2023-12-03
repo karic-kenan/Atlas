@@ -1,12 +1,7 @@
 package aethibo.io
 
-import aethibo.io.plugins.*
-import io.ktor.server.application.*
+import aethibo.io.core.config.setup
 
 fun main(args: Array<String>) {
-    io.ktor.server.cio.EngineMain.main(args)
-}
-
-fun Application.module() {
-    configureRouting()
+    setup(args = args)
 }
