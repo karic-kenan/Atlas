@@ -1,1 +1,1 @@
-rootProject.name = "aethibo.io.atlas"
+rootProject.name = "io.aethibo.atlas"
