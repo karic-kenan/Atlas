@@ -1,5 +1,6 @@
 package io.aethibo.core.config
 
+import io.aethibo.features.tags.data.table.Tags
 import io.aethibo.features.users.data.table.Follows
 import io.aethibo.features.users.data.table.Users
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ object DatabaseFactory {
             SchemaUtils.run {
                 create(Users)
                 create(Follows)
+                create(Tags)
             }
         }
     }

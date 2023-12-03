@@ -3,6 +3,9 @@ package io.aethibo.core.config
 import io.aethibo.core.di.appModule
 import io.aethibo.core.exceptions.ErrorExceptionMapping
 import io.aethibo.core.security.JwtProvider
+import io.aethibo.features.tags.data.di.tagsModule
+import io.aethibo.features.tags.domain.controller.TagsController
+import io.aethibo.features.tags.presentation.tags
 import io.aethibo.features.users.data.di.usersModule
 import io.aethibo.features.users.domain.controller.UsersController
 import io.aethibo.features.users.presentation.users
@@ -36,6 +39,7 @@ fun Application.mainModule() {
 
     val jwtProvider: JwtProvider by inject()
     val userController: UsersController by inject()
+    val tagController: TagsController by inject()
 
     install(DefaultHeaders)
     install(CallLogging)
@@ -66,7 +70,11 @@ fun Application.mainModule() {
     }
     install(Koin) {
         slf4jLogger()
-        modules(appModule, usersModule)
+        modules(
+            appModule,
+            usersModule,
+            tagsModule
+        )
     }
     install(Authentication) {
         jwt(name = "jwt") {
@@ -96,5 +104,6 @@ fun Application.mainModule() {
     }
     install(Routing) {
         users(userController)
+        tags(tagController)
     }
 }

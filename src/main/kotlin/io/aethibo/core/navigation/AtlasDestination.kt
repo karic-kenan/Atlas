@@ -15,3 +15,7 @@ object User : AtlasDestination {
 object Login : AtlasDestination {
     override val route: String = "login"
 }
+
+object Tags : AtlasDestination {
+    override val route: String = "tags"
+}
