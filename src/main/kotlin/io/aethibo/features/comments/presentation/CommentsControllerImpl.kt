@@ -18,23 +18,19 @@ class CommentsControllerImpl(private val commentService: CommentsService) : Comm
         val slug = call.parameters["slug"]
         require(!slug.isNullOrBlank()) { "Slug must not be empty" }
 
-        call.receive<CommentDTO>().apply {
-            require(!this.comment?.body.isNullOrBlank()) { "Body is null" }
+        val commentDto = call.receive<CommentDTO>()
+        require(!commentDto.comment?.body.isNullOrBlank()) { "Body is null" }
 
-            commentService.add(slug, email, this.comment!!).also { comment ->
-                call.respond(CommentDTO(comment))
-            }
-        }
+        val comment = commentService.add(slug, email, commentDto.comment!!)
+        call.respond(CommentDTO(comment))
     }
 
     override suspend fun findBySlug(call: ApplicationCall) {
-        call.parameters["slug"].apply {
-            require(!this.isNullOrBlank()) { "Slug must not be empty" }
+        val slug = call.parameters["slug"]
+        require(!slug.isNullOrBlank()) { "Slug must not be empty" }
 
-            commentService.findBySlug(this).also { comments ->
-                call.respond(CommentsDTO(comments))
-            }
-        }
+        val comments = commentService.findBySlug(slug)
+        call.respond(CommentsDTO(comments))
     }
 
     override suspend fun delete(call: ApplicationCall) {
