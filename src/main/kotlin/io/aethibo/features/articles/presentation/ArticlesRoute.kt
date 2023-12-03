@@ -10,13 +10,13 @@ fun Route.articles(articleController: ArticlesController, commentController: Com
     route(Articles.route) {
         authenticate("jwt") {
             get(Feed.route) { articleController.feed(this.context) }
-            route("{${Slug.route}}") {
+            route(Slug.route) {
                 route(Comments.route) {
                     post { commentController.add(this.context) }
                     authenticate("jwt", optional = true) {
                         get { commentController.findBySlug(this.context) }
                     }
-                    delete("{${CommentId.route}}") { commentController.delete(this.context) }
+                    delete(CommentId.route) { commentController.delete(this.context) }
                 }
                 route(Favorite.route) {
                     post { articleController.favorite(this.context) }

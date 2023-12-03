@@ -33,7 +33,7 @@ object Feed : AtlasDestination {
 }
 
 object Slug : AtlasDestination {
-    override val route: String = "slug"
+    override val route: String = "{slug}"
 }
 
 object Comments : AtlasDestination {
@@ -41,7 +41,7 @@ object Comments : AtlasDestination {
 }
 
 object CommentId : AtlasDestination {
-    override val route: String = "commentId"
+    override val route: String = "{commentId}"
 }
 
 object Favorite : AtlasDestination {
