@@ -46,10 +46,6 @@ The server is configured to start on [7003](http://localhost:7003/api/v1/) with 
       + users/...
     - Application.kt <- Entry point
 
-## Pending work :clipboard:
-1. Split application into modules
-2. Introduce tests
-
 ## Contribute
 If you want to contribute to this project, you're always welcome!
 
