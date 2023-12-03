@@ -1,5 +1,7 @@
-package aethibo.io.core.config
+package io.aethibo.core.config
 
+import io.aethibo.features.users.data.table.Follows
+import io.aethibo.features.users.data.table.Users
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import org.jetbrains.exposed.sql.Database
@@ -14,7 +16,8 @@ object DatabaseFactory {
 
         transaction {
             SchemaUtils.run {
-
+                create(Users)
+                create(Follows)
             }
         }
     }

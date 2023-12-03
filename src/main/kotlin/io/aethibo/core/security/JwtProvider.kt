@@ -1,5 +1,6 @@
-package aethibo.io.core.security
+package io.aethibo.core.security
 
+import io.aethibo.features.users.domain.model.User
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.interfaces.DecodedJWT
@@ -21,13 +22,13 @@ object JwtProvider {
         .build()
         .verify(token)
 
-//    fun createJWT(user: User): String = JWT
-//        .create()
-//        .withIssuedAt(Date())
-//        .withSubject("Authentication")
-//        .withIssuer(issuer)
-//        .withAudience(audience)
-//        .withClaim("email", user.email)
-//        .withExpiresAt(expiresAt)
-//        .sign(Cipher.algorithm)
+    fun createJWT(user: User): String = JWT
+        .create()
+        .withIssuedAt(Date())
+        .withSubject("Authentication")
+        .withIssuer(issuer)
+        .withAudience(audience)
+        .withClaim("email", user.email)
+        .withExpiresAt(expiresAt)
+        .sign(Cipher.algorithm)
 }

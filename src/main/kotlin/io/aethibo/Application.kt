@@ -1,6 +1,6 @@
-package aethibo.io
+package io.aethibo
 
-import aethibo.io.core.config.setup
+import io.aethibo.core.config.setup
 
 fun main(args: Array<String>) {
     setup(args = args)

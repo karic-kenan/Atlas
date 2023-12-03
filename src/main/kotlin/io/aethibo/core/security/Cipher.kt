@@ -1,4 +1,4 @@
-package aethibo.io.core.security
+package io.aethibo.core.security
 
 import com.auth0.jwt.algorithms.Algorithm
 

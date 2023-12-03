@@ -1,4 +1,4 @@
-package aethibo.io.core.exceptions
+package io.aethibo.core.exceptions
 
 import io.ktor.http.*
 

@@ -1,4 +1,4 @@
-package aethibo.io.core.exceptions
+package io.aethibo.core.exceptions
 
 import com.auth0.jwt.exceptions.JWTVerificationException
 import io.ktor.http.*
