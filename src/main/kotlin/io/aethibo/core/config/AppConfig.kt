@@ -3,6 +3,11 @@ package io.aethibo.core.config
 import io.aethibo.core.di.appModule
 import io.aethibo.core.exceptions.ErrorExceptionMapping
 import io.aethibo.core.security.JwtProvider
+import io.aethibo.features.articles.data.di.articlesModule
+import io.aethibo.features.articles.domain.controller.ArticlesController
+import io.aethibo.features.articles.presentation.articles
+import io.aethibo.features.comments.data.di.commentsModule
+import io.aethibo.features.comments.domain.controller.CommentsController
 import io.aethibo.features.tags.data.di.tagsModule
 import io.aethibo.features.tags.domain.controller.TagsController
 import io.aethibo.features.tags.presentation.tags
@@ -39,6 +44,8 @@ fun Application.mainModule() {
 
     val jwtProvider: JwtProvider by inject()
     val userController: UsersController by inject()
+    val articleController: ArticlesController by inject()
+    val commentController: CommentsController by inject()
     val tagController: TagsController by inject()
 
     install(DefaultHeaders)
@@ -73,6 +80,8 @@ fun Application.mainModule() {
         modules(
             appModule,
             usersModule,
+            articlesModule,
+            commentsModule,
             tagsModule
         )
     }
@@ -104,6 +113,7 @@ fun Application.mainModule() {
     }
     install(Routing) {
         users(userController)
+        articles(articleController, commentController)
         tags(tagController)
     }
 }

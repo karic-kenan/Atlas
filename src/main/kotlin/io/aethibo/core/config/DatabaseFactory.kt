@@ -1,5 +1,9 @@
 package io.aethibo.core.config
 
+import io.aethibo.features.articles.data.table.Articles
+import io.aethibo.features.articles.data.table.ArticlesTags
+import io.aethibo.features.articles.data.table.Favorites
+import io.aethibo.features.comments.data.table.Comments
 import io.aethibo.features.tags.data.table.Tags
 import io.aethibo.features.users.data.table.Follows
 import io.aethibo.features.users.data.table.Users
@@ -19,6 +23,10 @@ object DatabaseFactory {
             SchemaUtils.run {
                 create(Users)
                 create(Follows)
+                create(Articles)
+                create(Favorites)
+                create(ArticlesTags)
+                create(Comments)
                 create(Tags)
             }
         }
