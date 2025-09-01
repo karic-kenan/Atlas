@@ -1,81 +1,60 @@
-val ktor_version: String by project
-val kotlin_version: String by project
-val logback_version: String by project
-val koin_version: String by project
-val hikaricp_version: String by project
-val h2_version: String by project
-val postgresql_version: String by project
-val exposed_version: String by project
-val jwt_version: String by project
-val slugify_version: String by project
-val swagger_version: String by project
-
-
 plugins {
-    kotlin("jvm") version "1.9.21"
-    id("io.ktor.plugin") version "2.3.6"
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.21"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.ktor)
+    alias(libs.plugins.kotlin.plugin.serialization)
 }
 
 group = "io.aethibo"
-version = "0.0.1"
+version = "1.0.0"
 
 application {
-    mainClass.set("io.ktor.server.cio.EngineMain")
-
-    val isDevelopment: Boolean = project.ext.has("development")
-    applicationDefaultJvmArgs = listOf("-Dio.ktor.development=$isDevelopment")
-}
-
-repositories {
-    mavenCentral()
+    mainClass = "io.ktor.server.netty.EngineMain"
 }
 
 dependencies {
-    implementation("io.ktor:ktor-server-core-jvm")
-    implementation("io.ktor:ktor-server-cio-jvm")
-    implementation("io.ktor:ktor-server-netty-jvm")
-    implementation("io.ktor:ktor-server-call-logging")
-    implementation("io.ktor:ktor-server-status-pages")
-    implementation("io.ktor:ktor-server-default-headers")
+    // Ktor Server Core
+    implementation(libs.ktor.server.core)
+    implementation(libs.ktor.server.netty)
+    implementation(libs.ktor.server.cio)
+    implementation(libs.ktor.server.host.common)
 
-    // Logback
-    implementation("ch.qos.logback:logback-classic:$logback_version")
+    // Ktor Features
+    implementation(libs.ktor.server.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.ktor.server.call.logging)
+    implementation(libs.ktor.server.status.pages)
+    implementation(libs.ktor.server.default.headers)
+    implementation(libs.ktor.server.caching.headers)
+    implementation(libs.ktor.server.config.yaml)
 
-    // Content negotiation/serialization
-    implementation("io.ktor:ktor-server-content-negotiation")
-    implementation("io.ktor:ktor-serialization-kotlinx-json")
+    // Authentication & Security
+    implementation(libs.ktor.server.auth)
+    implementation(libs.ktor.server.auth.jwt)
 
-    // Koin - Dependency injection
-    implementation("io.insert-koin:koin-ktor:$koin_version")
-    implementation("io.insert-koin:koin-logger-slf4j:$koin_version")
+    // Documentation
+    implementation(libs.ktor.server.swagger)
+    implementation(libs.kotlin.asyncapi.ktor)
 
-    // Hikari - Connection pooling
-    implementation("com.zaxxer:HikariCP:$hikaricp_version")
+    // Database - Core
+    implementation(libs.exposed.core)
+    implementation(libs.exposed.jdbc)
 
-    // H2 database (in memory)
-    implementation("com.h2database:h2:$h2_version")
+    // Database - Drivers & Connection Pooling
+    implementation(libs.postgresql)
+    implementation(libs.h2)
+    implementation(libs.hikaricp)
 
-    // Postgres database (persistence)
-    implementation("org.postgresql:postgresql:$postgresql_version")
+    // Dependency Injection
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger.slf4j)
 
-    // Exposed - (sql library)
-    implementation("org.jetbrains.exposed:exposed-core:$exposed_version")
-    implementation("org.jetbrains.exposed:exposed-jdbc:$exposed_version")
+    // Utilities
+    implementation(libs.slugify)
 
-    // JWT
-    implementation("com.auth0:java-jwt:$jwt_version")
-
-    // Auth - JWT
-    implementation("io.ktor:ktor-server-auth-jwt")
-
-    // Slugify
-    implementation("com.github.slugify:slugify:$slugify_version")
-
-    // Swagger
-    implementation("io.github.smiley4:ktor-swagger-ui:$swagger_version")
+    // Logging
+    implementation(libs.logback.classic)
 
     // Testing
-    testImplementation("io.ktor:ktor-server-tests-jvm:2.2.4")
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version")
+    testImplementation(libs.ktor.server.test.host)
+    testImplementation(libs.kotlin.test.junit)
 }

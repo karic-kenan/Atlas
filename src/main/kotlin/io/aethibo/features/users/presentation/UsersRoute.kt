@@ -9,13 +9,13 @@ import io.ktor.server.routing.*
 
 fun Route.users(userController: UsersController) {
     route(Users.route) {
-        post { userController.register(this.context) }
-        post(Login.route) { userController.login(this.context) }
+        post { userController.register(call) }
+        post(Login.route) { userController.login(call) }
     }
     route(User.route) {
         authenticate("jwt") {
-            get { userController.getCurrent(this.context) }
-            put { userController.update(this.context) }
+            get { userController.getCurrent(call) }
+            put { userController.update(call) }
         }
     }
 }

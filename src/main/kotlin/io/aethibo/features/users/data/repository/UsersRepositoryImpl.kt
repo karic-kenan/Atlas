@@ -6,18 +6,22 @@ import io.aethibo.features.users.data.table.Follows
 import io.aethibo.features.users.data.table.Users
 import io.aethibo.features.users.domain.model.User
 import io.aethibo.features.users.domain.repository.UsersRepository
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.jdbc.*
 
 class UsersRepositoryImpl : UsersRepository {
     override suspend fun findByEmail(email: String): User? = dbQuery {
-        Users.select { Users.email eq email }
+        Users.selectAll()
+            .where { Users.email eq email }
             .map { Users.toDomain(it) }
             .firstOrNull()
     }
 
     override suspend fun findByUsername(username: String): User? = dbQuery {
-        Users.select { Users.username eq username }
+        Users.selectAll()
+            .where { Users.username eq username }
             .map { Users.toDomain(it) }
             .firstOrNull()
     }
@@ -61,9 +65,9 @@ class UsersRepositoryImpl : UsersRepository {
             additionalConstraint = {
                 Follows.user eq Users.id and (Follows.follower eq userIdToFollow)
             }
-        ).select {
-            Users.email eq email
-        }.count() > 0
+        ).select(Users.id)
+            .where { Users.email eq email }
+            .empty().not()
     }
 
     override suspend fun follow(email: String, usernameToFollow: String): User {

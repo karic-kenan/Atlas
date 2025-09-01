@@ -7,13 +7,18 @@ import io.aethibo.features.comments.domain.model.Comment
 import io.aethibo.features.comments.domain.repository.CommentsRepository
 import io.aethibo.features.users.data.table.Users
 import io.aethibo.features.users.domain.model.User
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.jdbc.deleteWhere
+import org.jetbrains.exposed.v1.jdbc.insertAndGetId
+import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class CommentsRepositoryImpl : CommentsRepository {
     private suspend fun findById(commentId: Long): Comment? {
         return dbQuery {
-            Comments.select { Comments.id eq commentId }
+            Comments.selectAll()
+                .where { Comments.id eq commentId }
                 .map { Comments.toDomain(it, null) }
                 .firstOrNull()
         }
@@ -22,7 +27,8 @@ class CommentsRepositoryImpl : CommentsRepository {
     override suspend fun add(slugCommented: String, email: String, comment: Comment): Comment? {
         var user: User? = null
         return dbQuery {
-            user = Users.select { Users.email eq email }
+            user = Users.selectAll()
+                .where { Users.email eq email }
                 .map { Users.toDomain(it) }.firstOrNull() ?: throw BadRequestResponse()
             Comments.insertAndGetId { row ->
                 row[body] = comment.body
@@ -38,7 +44,8 @@ class CommentsRepositoryImpl : CommentsRepository {
 
     override suspend fun findBySlug(slug: String): List<Comment> = dbQuery {
         Comments.join(Users, JoinType.INNER, additionalConstraint = { Comments.author eq Users.id })
-            .select { Comments.slug eq slug }
+            .selectAll()
+            .where { Comments.slug eq slug }
             .map { Comments.toDomain(it, Users.toDomain(it)) }
     }
 

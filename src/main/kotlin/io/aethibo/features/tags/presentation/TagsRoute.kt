@@ -8,7 +8,7 @@ import io.ktor.server.routing.*
 fun Route.tags(tagController: TagsController) {
     route(Tags.route) {
         authenticate("jwt", optional = true) {
-            get { tagController.get(this.context) }
+            get { tagController.get(call) }
         }
     }
 }

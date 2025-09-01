@@ -9,27 +9,27 @@ import io.ktor.server.routing.*
 fun Route.articles(articleController: ArticlesController, commentController: CommentsController) {
     route(Articles.route) {
         authenticate("jwt") {
-            get(Feed.route) { articleController.feed(this.context) }
+            get(Feed.route) { articleController.feed(call) }
             route(Slug.route) {
                 route(Comments.route) {
-                    post { commentController.add(this.context) }
+                    post { commentController.add(call) }
                     authenticate("jwt", optional = true) {
-                        get { commentController.findBySlug(this.context) }
+                        get { commentController.findBySlug(call) }
                     }
-                    delete(CommentId.route) { commentController.delete(this.context) }
+                    delete(CommentId.route) { commentController.delete(call) }
                 }
                 route(Favorite.route) {
-                    post { articleController.favorite(this.context) }
-                    delete { articleController.unfavorite(this.context) }
+                    post { articleController.favorite(call) }
+                    delete { articleController.unfavorite(call) }
                 }
-                get { articleController.get(this.context) }
-                put { articleController.update(this.context) }
-                delete { articleController.delete(this.context) }
+                get { articleController.get(call) }
+                put { articleController.update(call) }
+                delete { articleController.delete(call) }
             }
             authenticate("jwt", optional = true) {
-                get { articleController.findBy(this.context) }
+                get { articleController.findBy(call) }
             }
-            post { articleController.create(this.context) }
+            post { articleController.create(call) }
         }
     }
 }
