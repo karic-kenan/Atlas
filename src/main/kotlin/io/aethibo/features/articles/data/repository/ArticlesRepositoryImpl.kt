@@ -10,25 +10,32 @@ import io.aethibo.features.articles.domain.repository.ArticlesRepository
 import io.aethibo.features.tags.data.table.Tags
 import io.aethibo.features.users.data.table.Follows
 import io.aethibo.features.users.data.table.Users
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.v1.core.JoinType
+import org.jetbrains.exposed.v1.core.Op
+import org.jetbrains.exposed.v1.core.SortOrder
+import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.eq
+import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.inList
+import org.jetbrains.exposed.v1.core.and
+import org.jetbrains.exposed.v1.jdbc.*
 
 class ArticlesRepositoryImpl : ArticlesRepository {
     private suspend fun findWithConditional(where: Op<Boolean>, limit: Int, offset: Long): List<Article> = dbQuery {
         Articles.join(Users, JoinType.INNER, additionalConstraint = { Articles.author eq Users.id })
-            .select { where }
-            .limit(limit, offset)
+            .selectAll()
+            .where { where }
+            .limit(limit)
+            .offset(offset)
             .orderBy(Articles.createdAt, SortOrder.ASC)
             .map { row ->
                 val slug = row[Articles.slug]
-                val favoritesCount = Favorites.select { Favorites.slug eq slug }.count()
+                val favoritesCount = Favorites.selectAll().where { Favorites.slug eq slug }.count()
                 val tagList = Tags.join(
                     ArticlesTags,
                     JoinType.INNER,
                     additionalConstraint = { Tags.id eq ArticlesTags.tag },
                 )
-                    .select { ArticlesTags.slug eq slug }
+                    .selectAll()
+                    .where { ArticlesTags.slug eq slug }
                     .map { it[Tags.name] }
                 Articles.toDomain(row, Users.toDomain(row))
                     .copy(
@@ -42,7 +49,8 @@ class ArticlesRepositoryImpl : ArticlesRepository {
     override suspend fun findByTag(tag: String, limit: Int, offset: Long): List<Article> {
         val slugs = dbQuery {
             Tags.join(ArticlesTags, JoinType.INNER, additionalConstraint = { Tags.id eq ArticlesTags.tag })
-                .select { Tags.name eq tag }
+                .selectAll()
+                .where { Tags.name eq tag }
                 .map { it[ArticlesTags.slug] }
         }
         return findWithConditional((Articles.slug inList slugs), limit, offset)
@@ -51,8 +59,8 @@ class ArticlesRepositoryImpl : ArticlesRepository {
     override suspend fun findByFavorited(favorited: String, limit: Int, offset: Long): List<Article> {
         val slugs = dbQuery {
             Favorites.join(Users, JoinType.INNER, additionalConstraint = { Favorites.user eq Users.id })
-                .slice(Favorites.slug)
-                .select { Users.username eq favorited }
+                .select(Favorites.slug)
+                .where { Users.username eq favorited }
                 .map { it[Favorites.slug] }
         }
         return findWithConditional((Articles.slug inList slugs), limit, offset)
@@ -70,8 +78,8 @@ class ArticlesRepositoryImpl : ArticlesRepository {
                 row[author] = article.author?.id!!
             }
             article.tagList.map { tag ->
-                Tags.slice(Tags.id)
-                    .select { Tags.name eq tag }
+                Tags.select(Tags.id)
+                    .where { Tags.name eq tag }
                     .map { row -> row[Tags.id].value }
                     .firstOrNull()
                     ?: Tags.insertAndGetId { it[name] = tag }.value
@@ -90,21 +98,23 @@ class ArticlesRepositoryImpl : ArticlesRepository {
         return dbQuery {
             Articles.join(Users, JoinType.INNER, additionalConstraint = { Articles.author eq Users.id })
                 .selectAll()
-                .limit(limit, offset)
+                .limit(limit)
+                .offset(offset)
                 .orderBy(Articles.createdAt, SortOrder.ASC)
                 .map { row ->
-                    val favoritesCount = Favorites.select { Favorites.slug eq row[Articles.slug] }.count()
+                    val favoritesCount = Favorites.selectAll().where { Favorites.slug eq row[Articles.slug] }.count()
                     Articles.toDomain(row, Users.toDomain(row))
                         .copy(
                             favoritesCount = favoritesCount,
                             tagList =
-                            Tags.join(
-                                ArticlesTags,
-                                JoinType.INNER,
-                                additionalConstraint = { Tags.id eq ArticlesTags.tag },
-                            )
-                                .select { ArticlesTags.slug eq row[Articles.slug] }
-                                .map { it[Tags.name] },
+                                Tags.join(
+                                    ArticlesTags,
+                                    JoinType.INNER,
+                                    additionalConstraint = { Tags.id eq ArticlesTags.tag },
+                                )
+                                    .selectAll()
+                                    .where { ArticlesTags.slug eq row[Articles.slug] }
+                                    .map { it[Tags.name] },
                         )
                 }
         }
@@ -113,8 +123,8 @@ class ArticlesRepositoryImpl : ArticlesRepository {
     override suspend fun findFeed(email: String, limit: Int, offset: Long): List<Article> {
         val authors = dbQuery {
             Follows.join(Users, JoinType.INNER, additionalConstraint = { Follows.follower eq Users.id })
-                .slice(Follows.user)
-                .select { Users.email eq email }
+                .select(Follows.user)
+                .where { Users.email eq email }
                 .map { it[Follows.user] }
         }
 
@@ -156,9 +166,9 @@ class ArticlesRepositoryImpl : ArticlesRepository {
                     row[Favorites.slug] = slug
                 }
             }
-            Favorites.select {
-                Favorites.slug eq article.slug!!
-            }.count()
+            Favorites.selectAll()
+                .where { Favorites.slug eq article.slug!! }
+                .count()
         }.let {
             findBySlug(article.slug!!)?.copy(favoritesCount = it)
         }
@@ -170,7 +180,7 @@ class ArticlesRepositoryImpl : ArticlesRepository {
                 row[Favorites.slug] = slug
                 row[user] = userId
             }.let {
-                Favorites.select { Favorites.slug eq slug }.count()
+                Favorites.selectAll().where { Favorites.slug eq slug }.count()
             }
         }
     }
@@ -181,7 +191,7 @@ class ArticlesRepositoryImpl : ArticlesRepository {
             Favorites.deleteWhere {
                 Favorites.slug eq article.slug!! and (user eq userId)
             }.let {
-                Favorites.select { Favorites.slug eq article.slug!! }.count()
+                Favorites.selectAll().where { Favorites.slug eq article.slug!! }.count()
             }
         }
     }

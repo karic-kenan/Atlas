@@ -1,9 +1,9 @@
 package io.aethibo.features.users.data.table
 
 import io.aethibo.features.users.domain.model.User
-import org.jetbrains.exposed.dao.id.LongIdTable
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ResultRow
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
 
 internal object Users : LongIdTable() {
     val email: Column<String> = varchar("email", 200).uniqueIndex()
@@ -14,7 +14,7 @@ internal object Users : LongIdTable() {
 
     fun toDomain(row: ResultRow): User {
         return User(
-            id = row[Users.id].value,
+            id = row[id].value,
             email = row[email],
             username = row[username],
             password = row[password],

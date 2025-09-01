@@ -9,12 +9,12 @@ import io.ktor.server.routing.*
 fun Route.profiles(profileController: ProfilesController) {
     route(Profile.route) {
         authenticate("jwt", optional = true) {
-            get { profileController.get(this.context) }
+            get { profileController.get(call) }
         }
         authenticate("jwt") {
             route(Follow.route) {
-                post { profileController.follow(this.context) }
-                delete { profileController.unfollow(this.context) }
+                post { profileController.follow(call) }
+                delete { profileController.unfollow(call) }
             }
         }
     }

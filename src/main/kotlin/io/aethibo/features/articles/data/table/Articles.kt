@@ -2,9 +2,9 @@ package io.aethibo.features.articles.data.table
 
 import io.aethibo.features.articles.domain.model.Article
 import io.aethibo.features.users.domain.model.User
-import org.jetbrains.exposed.sql.Column
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.Table
+import org.jetbrains.exposed.v1.core.Column
+import org.jetbrains.exposed.v1.core.ResultRow
+import org.jetbrains.exposed.v1.core.Table
 
 internal object Articles : Table() {
     val slug: Column<String> = varchar("slug", 100)

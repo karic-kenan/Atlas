@@ -17,12 +17,11 @@ import io.aethibo.features.tags.presentation.tags
 import io.aethibo.features.users.data.di.usersModule
 import io.aethibo.features.users.domain.controller.UsersController
 import io.aethibo.features.users.presentation.users
-import io.github.smiley4.ktorswaggerui.SwaggerUI
 import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
-import io.ktor.server.plugins.callloging.*
+import io.ktor.server.plugins.calllogging.*
 import io.ktor.server.plugins.contentnegotiation.*
 import io.ktor.server.plugins.defaultheaders.*
 import io.ktor.server.plugins.statuspages.*
@@ -64,21 +63,21 @@ fun Application.mainModule() {
             },
         )
     }
-    install(SwaggerUI) {
-        swagger {
-            swaggerUrl = "swagger-ui"
-            forwardRoot = true
-        }
-        info {
-            title = "Atlas"
-            version = "latest"
-            description = "Atlas API provider for testing and demonstration purposes."
-        }
-        server {
-            url = "http://localhost:7003/api/v1"
-            description = "Development Server"
-        }
-    }
+//    install(SwaggerUI) {
+//        swagger {
+//            swaggerUrl = "swagger-ui"
+//            forwardRoot = true
+//        }
+//        info {
+//            title = "Atlas"
+//            version = "latest"
+//            description = "Atlas API provider for testing and demonstration purposes."
+//        }
+//        server {
+//            url = "http://localhost:7003/api/v1"
+//            description = "Development Server"
+//        }
+//    }
     install(Koin) {
         slf4jLogger()
         modules(
@@ -116,7 +115,7 @@ fun Application.mainModule() {
     install(StatusPages) {
         ErrorExceptionMapping.register(this)
     }
-    install(Routing) {
+    install(RoutingRoot) {
         users(userController)
         profiles(profileController)
         articles(articleController, commentController)
