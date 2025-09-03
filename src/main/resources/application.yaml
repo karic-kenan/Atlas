@@ -1,0 +1,25 @@
+ktor:
+  application:
+    modules:
+      - io.aethibo.core.config.AppConfigKt.module
+  deployment:
+    port: ${PORT:7003}
+
+  development: true
+
+api:
+  version: "v1"
+  root: "/api"
+  context: "/api/v1"
+
+jwt:
+  domain: "atlas-issuer"
+  audience: "atlas-audience"
+  realm: "atlas app"
+  secret: ${JWT_SECRET:atlas_secret_key}
+
+database:
+  driver: "org.h2.Driver"
+  url: ${DATABASE_URL:jdbc:h2:mem:regular;DB_CLOSE_DELAY=-1;}
+  username: ${DATABASE_USERNAME:}
+  password: ${DATABASE_PASSWORD:}
