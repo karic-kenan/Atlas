@@ -1,7 +1,7 @@
 package io.aethibo.features.comments.data.repository
 
-import io.aethibo.core.config.DatabaseFactory.dbQuery
 import io.aethibo.core.exceptions.BadRequestResponse
+import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.comments.data.table.Comments
 import io.aethibo.features.comments.domain.model.Comment
 import io.aethibo.features.comments.domain.repository.CommentsRepository

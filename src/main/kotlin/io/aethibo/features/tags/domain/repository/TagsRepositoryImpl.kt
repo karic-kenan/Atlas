@@ -1,6 +1,6 @@
 package io.aethibo.features.tags.domain.repository
 
-import io.aethibo.core.config.DatabaseFactory.dbQuery
+import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.tags.data.repository.TagsRepository
 import io.aethibo.features.tags.data.table.Tags
 import org.jetbrains.exposed.v1.jdbc.selectAll

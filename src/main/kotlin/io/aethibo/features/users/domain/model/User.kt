@@ -1,7 +1,6 @@
 package io.aethibo.features.users.domain.model
 
 import io.aethibo.core.extensions.isEmailValid
-import io.ktor.server.auth.*
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -47,4 +46,4 @@ data class User(
     val password: String? = null,
     val bio: String? = null,
     val image: String? = null
-) : Principal
+)
