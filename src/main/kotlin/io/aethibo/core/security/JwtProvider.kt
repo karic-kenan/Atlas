@@ -1,16 +1,17 @@
 package io.aethibo.core.security
 
-import io.aethibo.features.users.domain.model.User
 import com.auth0.jwt.JWT
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.interfaces.DecodedJWT
+import io.aethibo.features.users.domain.model.User
+import io.ktor.server.config.*
 import java.util.*
 
-object JwtProvider {
-    private const val validityInfo = 3_600_000 * 24 // 24 hours
-    private val expiresAt: Date = Date(System.currentTimeMillis() + validityInfo)
-    private const val issuer = "atlas-issuer"
-    const val audience = "atlas-audience"
+class JwtProvider(config: ApplicationConfig) {
+    private val issuer = config.property("jwt.domain").getString()
+    val audience = config.property("jwt.audience").getString()
+    val secret = config.property("jwt.secret").getString()
+    val realm = config.property("jwt.realm").getString()
 
     val verifier: JWTVerifier = JWT
         .require(Cipher.algorithm)
@@ -31,4 +32,9 @@ object JwtProvider {
         .withClaim("email", user.email)
         .withExpiresAt(expiresAt)
         .sign(Cipher.algorithm)
+
+    private companion object {
+        private const val VALIDITY_INFO = 3_600_000 * 24 // 24 hours
+        private val expiresAt: Date = Date(System.currentTimeMillis() + VALIDITY_INFO)
+    }
 }

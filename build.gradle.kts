@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.plugin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 group = "io.aethibo"
@@ -32,8 +33,8 @@ dependencies {
     implementation(libs.ktor.server.auth.jwt)
 
     // Documentation
-    implementation(libs.ktor.server.swagger)
-    implementation(libs.kotlin.asyncapi.ktor)
+    implementation(libs.ktor.swagger.ui)
+    implementation(libs.ktor.swagger.openapi)
 
     // Database - Core
     implementation(libs.exposed.core)
@@ -46,6 +47,8 @@ dependencies {
 
     // Dependency Injection
     implementation(libs.koin.ktor)
+    implementation(libs.koin.annotations)
+    ksp(libs.koin.compiler)
     implementation(libs.koin.logger.slf4j)
 
     // Utilities
@@ -57,4 +60,8 @@ dependencies {
     // Testing
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+ksp {
+    arg("KOIN_CONFIG_CHECK", "true")
 }

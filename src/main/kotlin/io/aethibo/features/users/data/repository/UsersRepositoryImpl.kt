@@ -1,7 +1,7 @@
 package io.aethibo.features.users.data.repository
 
-import io.aethibo.core.config.DatabaseFactory.dbQuery
 import io.aethibo.core.exceptions.NotFoundResponse
+import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.users.data.table.Follows
 import io.aethibo.features.users.data.table.Users
 import io.aethibo.features.users.domain.model.User

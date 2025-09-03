@@ -1,7 +1,7 @@
 package io.aethibo.features.articles.data.repository
 
-import io.aethibo.core.config.DatabaseFactory.dbQuery
 import io.aethibo.core.exceptions.NotFoundResponse
+import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.articles.data.table.Articles
 import io.aethibo.features.articles.data.table.ArticlesTags
 import io.aethibo.features.articles.data.table.Favorites
