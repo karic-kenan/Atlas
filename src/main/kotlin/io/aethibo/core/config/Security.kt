@@ -1,7 +1,7 @@
 package io.aethibo.core.config
 
 import io.aethibo.core.security.JwtProvider
-import io.aethibo.features.users.domain.controller.UsersController
+import io.aethibo.features.users.domain.usecase.GetUserByEmailUseCase
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
@@ -10,12 +10,11 @@ import org.koin.ktor.ext.inject
 
 fun Application.configureSecurity() {
     val jwtProvider: JwtProvider by inject()
-    val userController: UsersController by inject()
+    val getUserByEmailUseCase: GetUserByEmailUseCase by inject()
 
     install(Authentication) {
         jwt(name = "jwt") {
             verifier(jwtProvider.verifier)
-            authSchemes("Token")
             realm = jwtProvider.realm
 
             validate { credential ->
@@ -27,8 +26,12 @@ fun Application.configureSecurity() {
                     claim?.let {
                         this.attributes.put(AttributeKey("email"), it)
                     }
+                    println("Log :: Auth plugin :: Claim:$claim")
 
-                    userController.getUserByEmail(claim)
+                    getUserByEmailUseCase(claim).fold(
+                        ifLeft = { _ -> null },
+                        ifRight = { user -> user }
+                    )
                 } else {
                     null
                 }

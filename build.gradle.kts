@@ -27,6 +27,11 @@ dependencies {
     implementation(libs.ktor.server.default.headers)
     implementation(libs.ktor.server.caching.headers)
     implementation(libs.ktor.server.config.yaml)
+    implementation(libs.ktor.server.resource)
+
+    // Functional
+    implementation(libs.arrow.core)
+    implementation(libs.arrow.fx.coroutines)
 
     // Authentication & Security
     implementation(libs.ktor.server.auth)
