@@ -1,12 +1,12 @@
 package io.aethibo.core.config
 
-import io.aethibo.features.articles.data.table.Articles
-import io.aethibo.features.articles.data.table.ArticlesTags
-import io.aethibo.features.articles.data.table.Favorites
-import io.aethibo.features.comments.data.table.Comments
-import io.aethibo.features.tags.data.table.Tags
-import io.aethibo.features.users.data.table.Follows
-import io.aethibo.features.users.data.table.Users
+import io.aethibo.features.articles.data.model.ArticleEntity
+import io.aethibo.features.articles.data.model.ArticleTagsEntity
+import io.aethibo.features.articles.data.model.FavoritesEntity
+import io.aethibo.features.comments.data.model.CommentEntity
+import io.aethibo.features.tags.data.model.TagEntity
+import io.aethibo.features.users.data.model.FollowsEntity
+import io.aethibo.features.users.data.model.UserEntity
 import io.ktor.server.application.*
 import org.jetbrains.exposed.v1.jdbc.Database
 import org.jetbrains.exposed.v1.jdbc.SchemaUtils
@@ -26,13 +26,13 @@ fun Application.configureDatabases() {
     // Schema creation
     transaction {
         SchemaUtils.run {
-            create(Users)
-            create(Follows)
-            create(Articles)
-            create(Favorites)
-            create(ArticlesTags)
-            create(Comments)
-            create(Tags)
+            create(UserEntity)
+            create(FollowsEntity)
+            create(ArticleEntity)
+            create(FavoritesEntity)
+            create(ArticleTagsEntity)
+            create(CommentEntity)
+            create(TagEntity)
         }
     }
 }
