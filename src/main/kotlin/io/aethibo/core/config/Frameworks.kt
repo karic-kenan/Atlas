@@ -8,12 +8,12 @@ import io.aethibo.features.users.data.di.usersModule
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
-import org.koin.logger.slf4jLogger
+import org.koin.logger.SLF4JLogger
 
 fun Application.configureFrameworks() {
     val config = environment.config
     install(Koin) {
-        slf4jLogger()
+        logger(SLF4JLogger())
         modules(
             module {
                 single { config }
