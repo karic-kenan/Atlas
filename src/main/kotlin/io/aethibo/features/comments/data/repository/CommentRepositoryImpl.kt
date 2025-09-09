@@ -2,6 +2,7 @@ package io.aethibo.features.comments.data.repository
 
 import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.articles.data.model.ArticleEntity
+import io.aethibo.features.articles.data.model.ArticleEntity.slug
 import io.aethibo.features.comments.data.failure.CommentException
 import io.aethibo.features.comments.data.model.CommentEntity
 import io.aethibo.features.comments.domain.mapper.toCommentDomain
@@ -64,17 +65,14 @@ class CommentRepositoryImpl : CommentRepository {
                     .map { it.toUserDomain() }
                     .firstOrNull() ?: throw CommentException.AuthorNotFound(email)
 
-                // Verify article exists (optional - depends on your business logic)
                 val articleExists = ArticleEntity.selectAll()
-                    .where { ArticleEntity.slug eq slugCommented }
+                    .where { slug eq slugCommented }
                     .count() > 0
 
                 if (!articleExists) throw CommentException.ArticleNotFound(slugCommented)
 
                 CommentEntity.insertAndGetId { row ->
                     row[body] = comment.body
-                    row[createdAt] = System.currentTimeMillis()
-                    row[updatedAt] = System.currentTimeMillis()
                     row[slug] = slugCommented
                     row[author] = user.id!!
                 }.value
@@ -96,14 +94,13 @@ class CommentRepositoryImpl : CommentRepository {
                 CommentEntity.join(
                     UserEntity,
                     JoinType.INNER,
-                    additionalConstraint = { CommentEntity.author eq UserEntity.id })
+                    additionalConstraint = { CommentEntity.author eq UserEntity.id }
+                )
                     .selectAll()
-                    .where { CommentEntity.slug eq slug }
+                    .where { CommentEntity.article eq slug }
                     .map { it.toCommentDomain(it.toUserDomain()) }
             }
 
-            // You can choose whether to throw exception for empty results or return empty list
-            // Based on your articles repo, it seems you throw for empty results:
             if (comments.isEmpty()) throw CommentException.CommentsNotFoundForSlug(slug)
 
             comments
@@ -123,7 +120,7 @@ class CommentRepositoryImpl : CommentRepository {
             findById(id) ?: throw CommentException.CommentNotFound(id)
 
             val deletedCount = dbQuery {
-                CommentEntity.deleteWhere { CommentEntity.id eq id and (CommentEntity.slug eq slug) }
+                CommentEntity.deleteWhere { CommentEntity.id eq id and (CommentEntity.article eq slug) }
             }
 
             if (deletedCount == 0) {
@@ -151,7 +148,7 @@ class CommentRepositoryImpl : CommentRepository {
 
             val deletedCount = dbQuery {
                 CommentEntity.deleteWhere {
-                    CommentEntity.id eq id and (CommentEntity.slug eq slug) and (CommentEntity.author eq userId)
+                    CommentEntity.id eq id and (CommentEntity.article eq slug) and (CommentEntity.author eq userId)
                 }
             }
 

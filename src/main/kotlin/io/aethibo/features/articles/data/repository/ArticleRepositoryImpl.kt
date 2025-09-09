@@ -50,8 +50,6 @@ class ArticleRepositoryImpl : ArticleRepository {
                     row[title] = article.title!!
                     row[description] = article.description!!
                     row[body] = article.body
-                    row[createdAt] = System.currentTimeMillis()
-                    row[updatedAt] = System.currentTimeMillis()
                     row[author] = article.author?.id!!
                 }
 
@@ -245,7 +243,6 @@ class ArticleRepositoryImpl : ArticleRepository {
                         row[description] = article.description
                     }
                     row[body] = article.body
-                    row[updatedAt] = System.currentTimeMillis()
                     if (article.author != null) {
                         row[author] = article.author.id!!
                     }

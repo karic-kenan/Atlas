@@ -1,16 +1,17 @@
 package io.aethibo.features.articles.data.model
 
-import org.jetbrains.exposed.v1.core.Column
+import io.aethibo.features.tags.data.model.TagEntity
 import org.jetbrains.exposed.v1.core.Table
 
-internal object ArticleTagsEntity : Table() {
-    val tag: Column<Long> = long("tag")
-    val slug: Column<String> = varchar("slug", 100)
+object ArticleTagsEntity : Table("article_tags") {
+    val tag = reference("tag", TagEntity)
+    val slug = reference("slug", ArticleEntity.slug)
 
     override val primaryKey: PrimaryKey
-        get() = PrimaryKey(
-            tag,
-            slug,
-            name = "articlesTagsKey"
-        )
+        get() = PrimaryKey(tag, slug, name = "article_tags_pk")
+
+    init {
+        index(false, slug)
+        index(false, tag)
+    }
 }
