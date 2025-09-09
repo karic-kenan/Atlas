@@ -21,7 +21,7 @@ import org.jetbrains.exposed.v1.core.and
 import org.jetbrains.exposed.v1.jdbc.*
 
 class ArticleRepositoryImpl : ArticleRepository {
-    // --- Validation ---
+    // --- Validation helpers ---
     private fun validateArticleInput(article: Article) {
         if (article.slug.isNullOrBlank()) throw ArticleException.InvalidSlug(article.slug ?: "")
         if (article.title.isNullOrBlank()) throw ArticleException.EmptyTitle
@@ -36,191 +36,117 @@ class ArticleRepositoryImpl : ArticleRepository {
     }
 
     // --- Create ---
-    override suspend fun create(article: Article): Article? {
-        return try {
-            validateArticleInput(article)
+    override suspend fun create(article: Article): Article? = try {
+        validateArticleInput(article)
 
-            getBySlug(article.slug!!)?.let {
-                throw ArticleException.ArticleAlreadyExists(article.slug)
-            }
-
-            dbQuery {
-                ArticleEntity.insert { row ->
-                    row[slug] = article.slug
-                    row[title] = article.title!!
-                    row[description] = article.description!!
-                    row[body] = article.body
-                    row[author] = article.author?.id!!
-                }
-
-                article.tagList.map { tag ->
-                    TagEntity.select(TagEntity.id)
-                        .where { TagEntity.name eq tag }
-                        .map { row -> row[TagEntity.id].value }
-                        .firstOrNull()
-                        ?: TagEntity.insertAndGetId { it[name] = tag }.value
-                }.also {
-                    ArticleTagsEntity.batchInsert(it) { tagId ->
-                        this[ArticleTagsEntity.tag] = tagId
-                        this[ArticleTagsEntity.slug] = article.slug
-                    }
-                }
-            }
-
-            getBySlug(article.slug) ?: throw ArticleException.ArticleCreationFailed
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("create", e)
+        getBySlug(article.slug!!)?.let {
+            throw ArticleException.ArticleAlreadyExists(article.slug)
         }
+
+        dbQuery {
+            ArticleEntity.insert { row ->
+                row[slug] = article.slug
+                row[title] = article.title!!
+                row[description] = article.description!!
+                row[body] = article.body
+                row[author] = article.author?.id!!
+            }
+
+            // Handle tags
+            val tagIds = article.tagList.map { tag ->
+                TagEntity.select(TagEntity.id)
+                    .where { TagEntity.name eq tag }
+                    .map { it[TagEntity.id].value }
+                    .firstOrNull()
+                    ?: TagEntity.insertAndGetId { it[name] = tag }.value
+            }
+
+            ArticleTagsEntity.batchInsert(tagIds) { tagId ->
+                this[ArticleTagsEntity.tag] = tagId
+                this[ArticleTagsEntity.slug] = article.slug
+            }
+        }
+
+        getBySlug(article.slug) ?: throw ArticleException.ArticleCreationFailed
+    } catch (e: ArticleException) {
+        throw e
+    } catch (e: Exception) {
+        throw ArticleException.DatabaseError("create", e)
     }
 
     // --- Read ---
     override suspend fun all(limit: Int, offset: Long): List<Article> {
-        return try {
-            validatePagination(limit, offset)
-
-            val articles = dbQuery {
-                ArticleEntity.join(
-                    UserEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { ArticleEntity.author eq UserEntity.id })
-                    .selectAll()
-                    .limit(limit)
-                    .offset(offset)
-                    .orderBy(ArticleEntity.createdAt, SortOrder.ASC)
-                    .map { row ->
-                        val favoritesCount =
-                            FavoritesEntity.selectAll().where { FavoritesEntity.slug eq row[ArticleEntity.slug] }
-                                .count()
-                        row.toArticleDomain(row.toUserDomain()).copy(
-                            favoritesCount = favoritesCount,
-                            tagList =
-                                TagEntity.join(
-                                    ArticleTagsEntity,
-                                    JoinType.INNER,
-                                    additionalConstraint = { TagEntity.id eq ArticleTagsEntity.tag },
-                                )
-                                    .selectAll()
-                                    .where { ArticleTagsEntity.slug eq row[ArticleEntity.slug] }
-                                    .map { it[TagEntity.name] },
-                        )
-                    }
-            }
-
-            if (articles.isEmpty()) throw ArticleException.EmptySearchResults
-            articles
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findAll", e)
-        }
+        validatePagination(limit, offset)
+        return findWithConditional(Op.TRUE, limit, offset)
     }
 
     override suspend fun getBySlug(slug: String): Article? {
-        return try {
-            if (slug.isBlank()) throw ArticleException.InvalidSlug(slug)
-
-            findWithConditional(
-                where = (ArticleEntity.slug eq slug),
-                limit = 1,
-                offset = 0
-            ).firstOrNull()
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findBySlug", e)
-        }
+        if (slug.isBlank()) throw ArticleException.InvalidSlug(slug)
+        return findWithConditional(ArticleEntity.slug eq slug, limit = 1, offset = 0).firstOrNull()
     }
 
     override suspend fun getByAuthor(author: String, limit: Int, offset: Long): List<Article> {
-        return try {
-            validatePagination(limit, offset)
-            if (author.isBlank()) throw ArticleException.InvalidUsername(author)
+        validatePagination(limit, offset)
+        if (author.isBlank()) throw ArticleException.InvalidUsername(author)
 
-            val articles = findWithConditional((UserEntity.username eq author), limit, offset)
-            if (articles.isEmpty()) throw ArticleException.EmptySearchResults
-            articles
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findByAuthor", e)
-        }
+        return findWithConditional(UserEntity.username eq author, limit, offset)
     }
 
     override suspend fun getByTag(tag: String, limit: Int, offset: Long): List<Article> {
-        return try {
-            validatePagination(limit, offset)
-            if (tag.isBlank()) throw ArticleException.TagNotFound(tag)
+        validatePagination(limit, offset)
+        if (tag.isBlank()) throw ArticleException.TagNotFound(tag)
 
-            val slugs = dbQuery {
-                TagEntity.join(
-                    ArticleTagsEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { TagEntity.id eq ArticleTagsEntity.tag })
-                    .selectAll()
-                    .where { TagEntity.name eq tag }
-                    .map { it[ArticleTagsEntity.slug] }
-            }
-
-            if (slugs.isEmpty()) throw ArticleException.EmptySearchResults
-
-            findWithConditional((ArticleEntity.slug inList slugs), limit, offset)
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findByTag", e)
+        val slugs = dbQuery {
+            ArticleTagsEntity.join(
+                TagEntity,
+                JoinType.INNER,
+                additionalConstraint = { ArticleTagsEntity.tag eq TagEntity.id })
+                .selectAll()
+                .where { TagEntity.name eq tag }
+                .map { it[ArticleTagsEntity.slug] }
         }
+
+        if (slugs.isEmpty()) return emptyList()
+
+        return findWithConditional(ArticleEntity.slug inList slugs, limit, offset)
     }
 
     override suspend fun getByFavourite(favourite: String, limit: Int, offset: Long): List<Article> {
-        return try {
-            validatePagination(limit, offset)
-            if (favourite.isBlank()) throw ArticleException.InvalidUsername(favourite)
+        validatePagination(limit, offset)
+        if (favourite.isBlank()) throw ArticleException.InvalidUsername(favourite)
 
-            val slugs = dbQuery {
-                FavoritesEntity.join(
-                    UserEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { FavoritesEntity.user eq UserEntity.id })
-                    .select(FavoritesEntity.slug)
-                    .where { UserEntity.username eq favourite }
-                    .map { it[FavoritesEntity.slug] }
-            }
-
-            if (slugs.isEmpty()) throw ArticleException.EmptySearchResults
-
-            findWithConditional((ArticleEntity.slug inList slugs), limit, offset)
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findByFavorited", e)
+        val slugs = dbQuery {
+            FavoritesEntity.join(
+                UserEntity,
+                JoinType.INNER,
+                additionalConstraint = { FavoritesEntity.user eq UserEntity.id })
+                .select(FavoritesEntity.slug)
+                .where { UserEntity.username eq favourite }
+                .map { it[FavoritesEntity.slug] }
         }
+
+        if (slugs.isEmpty()) return emptyList()
+
+        return findWithConditional(ArticleEntity.slug inList slugs, limit, offset)
     }
 
     override suspend fun getFeed(email: String, limit: Int, offset: Long): List<Article> {
-        return try {
-            validatePagination(limit, offset)
-            if (email.isBlank() || !email.contains("@")) throw ArticleException.InvalidAuthorEmail(email)
+        validatePagination(limit, offset)
+        if (email.isBlank() || !email.contains("@")) throw ArticleException.InvalidAuthorEmail(email)
 
-            val authors = dbQuery {
-                FollowsEntity.join(
-                    UserEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { FollowsEntity.follower eq UserEntity.id })
-                    .select(FollowsEntity.user)
-                    .where { UserEntity.email eq email }
-                    .map { it[FollowsEntity.user] }
-            }
-
-            if (authors.isEmpty()) throw ArticleException.NoFollowedAuthors
-
-            findWithConditional((ArticleEntity.author inList authors), limit, offset)
-        } catch (e: ArticleException) {
-            throw e
-        } catch (e: Exception) {
-            throw ArticleException.DatabaseError("findFeed", e)
+        val authorIds = dbQuery {
+            FollowsEntity.join(
+                UserEntity,
+                JoinType.INNER,
+                additionalConstraint = { FollowsEntity.follower eq UserEntity.id })
+                .select(FollowsEntity.user)
+                .where { UserEntity.email eq email }
+                .map { it[FollowsEntity.user] }
         }
+
+        if (authorIds.isEmpty()) return emptyList()
+
+        return findWithConditional(ArticleEntity.author inList authorIds, limit, offset)
     }
 
     // --- Update ---
@@ -352,31 +278,48 @@ class ArticleRepositoryImpl : ArticleRepository {
     }
 
     // --- Helper ---
-    private suspend fun findWithConditional(where: Op<Boolean>, limit: Int, offset: Long): List<Article> = dbQuery {
-        ArticleEntity.join(UserEntity, JoinType.INNER, additionalConstraint = { ArticleEntity.author eq UserEntity.id })
+    private suspend fun findWithConditional(
+        where: Op<Boolean>,
+        limit: Int,
+        offset: Long
+    ): List<Article> = dbQuery {
+        // 1️⃣ Load articles with authors
+        val articlesWithAuthors = ArticleEntity.join(
+            UserEntity,
+            JoinType.INNER,
+            additionalConstraint = { ArticleEntity.author eq UserEntity.id })
             .selectAll()
             .where { where }
             .limit(limit)
             .offset(offset)
             .orderBy(ArticleEntity.createdAt, SortOrder.ASC)
-            .map { row ->
-                val slug = row[ArticleEntity.slug]
-                val favoritesCount = FavoritesEntity.selectAll().where { FavoritesEntity.slug eq slug }.count()
-                val tagList = TagEntity.join(
-                    ArticleTagsEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { TagEntity.id eq ArticleTagsEntity.tag },
-                )
-                    .selectAll()
-                    .where { ArticleTagsEntity.slug eq slug }
-                    .map { it[TagEntity.name] }
+            .map { it.toArticleDomain(it.toUserDomain()) }
 
-                row.toArticleDomain(row.toUserDomain())
-                    .copy(
-                        favorited = favoritesCount > 0,
-                        favoritesCount = favoritesCount,
-                        tagList = tagList,
-                    )
-            }
+        val slugs = articlesWithAuthors.map { it.slug!! }
+        if (slugs.isEmpty()) return@dbQuery emptyList()
+
+        // 2️⃣ Preload favorites
+        val favoritesMap = FavoritesEntity.selectAll().where { FavoritesEntity.slug inList slugs }
+            .groupBy { it[FavoritesEntity.slug] }
+            .mapValues { it.value.size }
+
+        // 3️⃣ Preload tags
+        val tagsMap = ArticleTagsEntity.join(
+            TagEntity,
+            JoinType.INNER,
+            additionalConstraint = { ArticleTagsEntity.tag eq TagEntity.id })
+            .selectAll()
+            .where { ArticleTagsEntity.slug inList slugs }
+            .groupBy { it[ArticleTagsEntity.slug] }
+            .mapValues { entry -> entry.value.map { it[TagEntity.name] } }
+
+        // 4️⃣ Map counts and tags
+        articlesWithAuthors.map { article ->
+            article.copy(
+                favorited = (favoritesMap[article.slug] ?: 0) > 0,
+                favoritesCount = (favoritesMap[article.slug] ?: 0).toLong(),
+                tagList = tagsMap[article.slug] ?: emptyList()
+            )
+        }
     }
 }
