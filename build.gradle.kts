@@ -49,6 +49,7 @@ dependencies {
     // Database - Core
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.java.time)
 
     // Database - Drivers & Connection Pooling
     implementation(libs.postgresql)

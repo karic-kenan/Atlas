@@ -1,5 +1,7 @@
 package io.aethibo.features.users.domain.model
 
+import java.time.LocalDateTime
+
 data class User(
     val id: Long? = null,
     val email: String,
@@ -9,11 +11,11 @@ data class User(
     val image: String? = null,
     val token: String? = null,
     val refreshToken: String? = null,
-    val createdAt: String? = null,
-    val updatedAt: String? = null,
+    val createdAt: LocalDateTime? = null,
+    val updatedAt: LocalDateTime? = null,
     val isActive: Boolean = true,
     val emailVerified: Boolean = false,
-    val lastLoginAt: String? = null,
+    val lastLoginAt: LocalDateTime? = null,
     val failedLoginAttempts: Int = 0,
-    val lockedUntil: String? = null
+    val lockedUntil: LocalDateTime? = null
 )

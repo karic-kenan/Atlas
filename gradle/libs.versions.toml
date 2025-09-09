@@ -21,6 +21,7 @@ arrow-core = { module = "io.arrow-kt:arrow-core", version.ref = "arrow" }
 arrow-fx-coroutines = { module = "io.arrow-kt:arrow-fx-coroutines", version.ref = "arrow" }
 exposed-core = { module = "org.jetbrains.exposed:exposed-core", version.ref = "exposed" }
 exposed-jdbc = { module = "org.jetbrains.exposed:exposed-jdbc", version.ref = "exposed" }
+exposed-java-time = { module = "org.jetbrains.exposed:exposed-java-time", version.ref = "exposed" }
 h2 = { module = "com.h2database:h2", version.ref = "h2" }
 hikaricp = { module = "com.zaxxer:HikariCP", version.ref = "hikaricp" }
 jwt = { module = "com.auth0:java-jwt", version.ref = "jwt" }

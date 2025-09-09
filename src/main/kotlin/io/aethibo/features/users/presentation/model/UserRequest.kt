@@ -32,5 +32,8 @@ data class UpdateUserWrapper(
 
 @Serializable
 data class UpdateUserRequest(
-    val email: String
+    val email: String? = null,
+    val username: String? = null,
+    val bio: String? = null,
+    val image: String? = null
 )
