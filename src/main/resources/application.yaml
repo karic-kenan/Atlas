@@ -23,3 +23,8 @@ database:
   url: ${DATABASE_URL:jdbc:h2:mem:regular;DB_CLOSE_DELAY=-1;}
   username: ${DATABASE_USERNAME:}
   password: ${DATABASE_PASSWORD:}
+  maximumPoolSize: ${DB_MAX_POOL_SIZE:10}
+  minimumIdle: ${DB_MIN_IDLE:2}
+  idleTimeout: ${DB_IDLE_TIMEOUT:60000}       # 60s
+  maxLifetime: ${DB_MAX_LIFETIME:1800000}     # 30m
+  connectionTimeout: ${DB_CONNECTION_TIMEOUT:10000} # 10s

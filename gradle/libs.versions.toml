@@ -12,6 +12,7 @@ ksp = "2.1.10-1.0.30"
 ktor = "3.2.3"
 ktor-swagger = "5.2.0"
 logback = "1.4.14"
+micrometer = "1.16.0-M2"
 postgresql = "42.7.5"
 slugify = "3.0.7"
 
@@ -50,6 +51,8 @@ ktor-server-status-pages = { module = "io.ktor:ktor-server-status-pages", versio
 ktor-server-test-host = { module = "io.ktor:ktor-server-test-host", version.ref = "ktor" }
 ktor-swagger-openapi = { module = "io.github.smiley4:ktor-openapi", version.ref = "ktor-swagger" }
 ktor-swagger-ui = { module = "io.github.smiley4:ktor-swagger-ui", version.ref = "ktor-swagger" }
+micrometer-core = { module = "io.micrometer:micrometer-core", version.ref = "micrometer" }
+micrometer-registry-prometheuse = { module = "io.micrometer:micrometer-registry-prometheus", version.ref = "micrometer" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 slugify = { module = "com.github.slugify:slugify", version.ref = "slugify" }
