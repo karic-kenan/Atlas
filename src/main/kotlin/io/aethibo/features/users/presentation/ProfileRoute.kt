@@ -17,7 +17,7 @@ fun Route.profile(
     followProfileUseCase: FollowProfileUseCase,
     unfollowProfileUseCase: UnfollowProfileUseCase,
 ) {
-    authenticate("jwt") {
+    authenticate("jwt-access") {
         // POST /api/profiles/celeb_{USERNAME}/follow
         post<Api.Profile.Follow> { resources ->
             followUser(resources.parent.username, followProfileUseCase)
@@ -29,7 +29,7 @@ fun Route.profile(
         }
     }
 
-    authenticate("jwt", optional = true) {
+    authenticate("jwt-access", optional = true) {
         // GET /api/profiles/celeb_{{USERNAME}}
         get<Api.Profile> { resources ->
             getProfileByUsernameRoute(resources.username, getProfileByUsernameUseCase)

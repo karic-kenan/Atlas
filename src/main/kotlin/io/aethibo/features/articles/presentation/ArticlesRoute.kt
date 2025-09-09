@@ -30,7 +30,7 @@ fun Route.article(
     favouriteArticleUseCase: FavoriteArticleUseCase,
     unfavoriteArticleUseCase: UnfavoriteArticleUseCase,
 ) {
-    authenticate("jwt") {
+    authenticate("jwt-access") {
         // GET /api/articles/feed
         get<Api.Articles.Feed> { resource ->
             getFeed(resource.limit, resource.offset, findFeedUseCase)
@@ -67,7 +67,7 @@ fun Route.article(
         }
     }
 
-    authenticate("jwt", optional = true) {
+    authenticate("jwt-access", optional = true) {
         // GET /api/articles with query parameters
         get<Api.Articles> { resource ->
             val request = FindArticlesRequest(

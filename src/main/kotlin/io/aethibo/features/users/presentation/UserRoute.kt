@@ -29,7 +29,7 @@ fun Route.user(
         authenticateUser(authenticateUserUseCase)
     }
 
-    authenticate("jwt") {
+    authenticate("jwt-access") {
         // GET /api/user
         get<Api.User> { resource ->
             getCurrentUser()
