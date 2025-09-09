@@ -1,7 +1,7 @@
 package io.aethibo.features.users.data.failure
 
 import io.aethibo.core.exceptions.Failure
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.*
 
 sealed class UserFailure : Failure.FeatureFailure() {
     // User not found operations
@@ -13,6 +13,8 @@ sealed class UserFailure : Failure.FeatureFailure() {
     data class UserAlreadyExists(val identifier: String) : UserFailure()
     data class UserCreationFailed(val email: String) : UserFailure()
     data class UserUpdateFailed(val email: String) : UserFailure()
+    data class UserInactive(val reason: String) : UserFailure()
+    data class InvalidToken(val reason: String) : UserFailure()
 
     // Follow operations
     data class FollowOperationFailed(val followerEmail: String, val targetUsername: String) : UserFailure()
@@ -50,11 +52,15 @@ fun UserFailure.getErrorMessage(): String = when (this) {
     is UserFailure.EmptyRequiredField -> "Required field '$fieldName' cannot be empty"
     is UserFailure.DatabaseError -> "Database error during $operation: ${cause.message}"
     is UserFailure.RepositoryInitializationFailed -> "Failed to initialize user repository"
+    is UserFailure.UserInactive -> "User account is deactivated"
+    is UserFailure.InvalidToken -> "Invalid token"
 }
 
 fun UserFailure.toHttpStatus(): HttpStatusCode = when (this) {
     is UserFailure.UserNotFound -> HttpStatusCode.NotFound
     is UserFailure.UserNotFoundByEmail -> HttpStatusCode.NotFound
+    is UserFailure.UserInactive -> HttpStatusCode.NotFound
+    is UserFailure.InvalidToken -> HttpStatusCode.Unauthorized
     is UserFailure.UserNotFoundByUsername -> HttpStatusCode.NotFound
     is UserFailure.UserAlreadyExists -> HttpStatusCode.Conflict
     is UserFailure.UserCreationFailed -> HttpStatusCode.InternalServerError

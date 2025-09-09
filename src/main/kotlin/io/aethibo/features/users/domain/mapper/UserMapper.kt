@@ -18,10 +18,19 @@ fun ResultRow.toUserDomain(): User = User(
 fun User.toUserResponseDto(): UserResponseDto = UserResponseDto(
     id = this.id,
     email = this.email,
-    token = this.token,
     username = this.username,
+    password = this.password,
     bio = this.bio,
-    image = this.image
+    image = this.image,
+    token = this.token,
+    refreshToken = this.refreshToken,
+    createdAt = this.createdAt,
+    updatedAt = this.updatedAt,
+    isActive = this.isActive,
+    emailVerified = this.emailVerified,
+    lastLoginAt = this.lastLoginAt,
+    failedLoginAttempts = this.failedLoginAttempts,
+    lockedUntil = this.lockedUntil
 )
 
 fun RegisterUserRequest.toDomain() = User(

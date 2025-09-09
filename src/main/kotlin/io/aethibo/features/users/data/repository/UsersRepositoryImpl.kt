@@ -40,6 +40,21 @@ class UsersRepositoryImpl : UsersRepository {
         user.password?.let { validatePassword(it) }
     }
 
+    override suspend fun findById(id: Long): User? {
+        return try {
+            dbQuery {
+                UserEntity.selectAll()
+                    .where { UserEntity.id eq id }
+                    .map { it.toUserDomain() }
+                    .firstOrNull()
+            }
+        } catch (e: UserException) {
+            throw e
+        } catch (e: Exception) {
+            throw UserException.DatabaseError("findByEmail", e)
+        }
+    }
+
     override suspend fun findByEmail(email: String): User? {
         return try {
             validateEmail(email)
