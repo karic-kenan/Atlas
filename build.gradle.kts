@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.postgresql)
     implementation(libs.h2)
     implementation(libs.hikaricp)
+    implementation(libs.micrometer.core)
+    implementation(libs.micrometer.registry.prometheuse)
 
     // Dependency Injection
     implementation(libs.koin.ktor)
