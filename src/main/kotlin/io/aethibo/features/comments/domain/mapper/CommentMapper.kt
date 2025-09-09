@@ -17,19 +17,18 @@ fun ResultRow.toCommentDomain(author: User?): Comment = Comment(
 
 fun List<Comment>.toCommentsResponseDto(): List<CommentResponseDto> = map { it.toCommentResponseDto() }
 
-
 fun Comment.toCommentResponseDto(): CommentResponseDto = CommentResponseDto(
     id = this.id ?: 0L,
     body = this.body,
-    createdAt = this.createdAt.toString(), // Format as needed
-    updatedAt = this.updatedAt.toString(), // Format as needed
+    createdAt = this.createdAt.toString(),
+    updatedAt = this.updatedAt.toString(),
 //    author = this.author?.toAuthorDto() ?: AuthorDto("", "", "", false)
 )
 
 fun CreateCommentRequest.toDomain(): Comment = Comment(
     id = null,
     body = this.body,
-    createdAt = 0L, // Will be set by repository
-    updatedAt = 0L, // Will be set by repository
+    createdAt = null, // DB will fill automatically
+    updatedAt = null, // DB will fill automatically
     author = null // Will be set by use case
 )

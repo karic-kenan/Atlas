@@ -1,12 +1,20 @@
 package io.aethibo.features.comments.data.model
 
-import org.jetbrains.exposed.v1.core.Column
+import io.aethibo.features.articles.data.model.ArticleEntity
+import io.aethibo.features.users.data.model.UserEntity
 import org.jetbrains.exposed.v1.core.dao.id.LongIdTable
+import org.jetbrains.exposed.v1.javatime.datetime
+import java.time.LocalDateTime
 
-internal object CommentEntity : LongIdTable() {
-    val body: Column<String> = varchar("body", 1000)
-    val createdAt: Column<Long> = long("created_at")
-    val updatedAt: Column<Long> = long("updated_at")
-    val slug: Column<String> = varchar("slug", 100)
-    val author: Column<Long> = long("author")
+object CommentEntity : LongIdTable("comments") {
+    val body = varchar("body", 1000)
+    val createdAt = datetime("created_at").clientDefault { LocalDateTime.now() }
+    val updatedAt = datetime("updated_at").clientDefault { LocalDateTime.now() }
+    val article = reference("slug", ArticleEntity.slug)
+    val author = reference("author", UserEntity)
+
+    init {
+        index(false, article)
+        index(false, author)
+    }
 }

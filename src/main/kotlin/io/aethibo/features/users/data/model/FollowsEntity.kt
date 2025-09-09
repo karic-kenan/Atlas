@@ -1,16 +1,16 @@
 package io.aethibo.features.users.data.model
 
-import org.jetbrains.exposed.v1.core.Column
 import org.jetbrains.exposed.v1.core.Table
 
-internal object FollowsEntity : Table() {
-    val user: Column<Long> = long("user")
-    val follower: Column<Long> = long("user_follower")
+object FollowsEntity : Table("follows") {
+    val user = reference("user", UserEntity)
+    val follower = reference("follower", UserEntity)
 
     override val primaryKey: PrimaryKey
-        get() = PrimaryKey(
-            user,
-            follower,
-            name = "followsKey"
-        )
+        get() = PrimaryKey(user, follower, name = "follows_pk")
+
+    init {
+        index(false, user)
+        index(false, follower)
+    }
 }
