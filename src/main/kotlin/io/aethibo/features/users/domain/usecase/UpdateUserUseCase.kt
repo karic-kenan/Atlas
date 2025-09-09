@@ -21,8 +21,10 @@ suspend fun updateUser(
         val validEmail = email?.takeIf { it.isNotBlank() }
             ?: raise(UserFailure.InvalidEmail(email.orEmpty()))
 
-        userRepository.update(validEmail, user)
+        val updatedUser = userRepository.update(validEmail, user)
             ?: raise(UserFailure.UserUpdateFailed(validEmail))
+
+        updatedUser.copy(password = null)
     }) { exception ->
         val failure = when (exception) {
             is UserException -> exception.mapToFailure()

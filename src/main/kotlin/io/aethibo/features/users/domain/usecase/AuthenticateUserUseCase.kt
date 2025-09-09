@@ -3,26 +3,23 @@ package io.aethibo.features.users.domain.usecase
 import arrow.core.Either
 import arrow.core.raise.catch
 import arrow.core.raise.either
-import io.aethibo.core.security.Cipher
 import io.aethibo.core.security.JwtProvider
+import io.aethibo.core.security.SecureArgon2Cipher
+import io.aethibo.core.utils.getUserPermissions
 import io.aethibo.features.users.data.failure.UserException
 import io.aethibo.features.users.data.failure.UserFailure
 import io.aethibo.features.users.data.failure.mapToFailure
 import io.aethibo.features.users.domain.model.User
 import io.aethibo.features.users.domain.repository.UsersRepository
-import java.util.*
 
 fun interface AuthenticateUserUseCase : suspend (User) -> Either<UserFailure, User>
 
 suspend fun authenticateUser(
     userRepository: UsersRepository,
     jwtProvider: JwtProvider,
-    cipher: Cipher,
     user: User
 ): Either<UserFailure, User> = either {
     catch({
-        val base64Encoder = Base64.getEncoder()
-
         val email = user.email.takeIf { it.isNotBlank() }
             ?: raise(UserFailure.InvalidEmail(user.email))
 
@@ -32,12 +29,22 @@ suspend fun authenticateUser(
         val userFound = userRepository.findByEmail(email)
             ?: raise(UserFailure.UserNotFoundByEmail(email))
 
-        val encryptedInputPassword = String(base64Encoder.encode(cipher.encrypt(password)))
-        if (userFound.password != encryptedInputPassword) {
+        if (!userFound.isActive) {
+            raise(UserFailure.UserInactive("User account is deactivated"))
+        }
+
+        if (!SecureArgon2Cipher.verifyPassword(password, userFound.password!!)) {
             raise(UserFailure.InvalidPassword("Email or password invalid"))
         }
 
-        userFound.copy(token = jwtProvider.createJWT(userFound))
+        val permissions = getUserPermissions(userFound)
+        val tokenPair = jwtProvider.createTokenPair(userFound, permissions)
+
+        userFound.copy(
+            token = tokenPair.accessToken,
+            refreshToken = tokenPair.refreshToken,
+            password = null // Never return password
+        )
     }) { exception ->
         val failure = when (exception) {
             is UserException -> exception.mapToFailure()

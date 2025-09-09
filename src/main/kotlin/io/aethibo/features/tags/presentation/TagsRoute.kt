@@ -10,7 +10,7 @@ import io.ktor.server.routing.*
 fun Route.tag(
     getAllTagsUseCase: GetAllTagsUseCase,
 ) {
-    authenticate("jwt", optional = true) {
+    authenticate("jwt-access", optional = true) {
         get<Api.Tags> { resource ->
             getAllTags(getAllTagsUseCase)
         }

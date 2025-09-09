@@ -12,7 +12,6 @@ val usersModule = module {
             authenticateUser(
                 userRepository = get(),
                 jwtProvider = get(),
-                cipher = get(),
                 user = user
             )
         }
@@ -23,7 +22,6 @@ val usersModule = module {
             createUser(
                 userRepository = get(),
                 jwtProvider = get(),
-                cipher = get(),
                 user = user
             )
         }
@@ -35,6 +33,16 @@ val usersModule = module {
                 userRepository = get(),
                 email = email,
                 user = user
+            )
+        }
+    }
+
+    factory<GetUserByIdUseCase> {
+        GetUserByIdUseCase { id ->
+            getUserById(
+                userRepository = get(),
+                jwtProvider = get(),
+                id = id
             )
         }
     }
@@ -75,6 +83,17 @@ val usersModule = module {
                 userRepository = get(),
                 email = email,
                 usernameToUnfollow = usernameToUnfollow
+            )
+        }
+    }
+
+    factory<RefreshTokenUseCase> {
+        RefreshTokenUseCase { refreshToken ->
+            refreshToken(
+                userRepository = get(),
+                jwtProvider = get(),
+                tokenBlacklistService = get(),
+                refreshToken = refreshToken
             )
         }
     }

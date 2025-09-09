@@ -28,6 +28,9 @@ dependencies {
     implementation(libs.ktor.server.caching.headers)
     implementation(libs.ktor.server.config.yaml)
     implementation(libs.ktor.server.resource)
+    implementation(libs.ktor.server.http.redirect)
+    implementation(libs.ktor.server.hsts)
+    implementation(libs.ktor.server.cors)
 
     // Functional
     implementation(libs.arrow.core)
@@ -36,6 +39,8 @@ dependencies {
     // Authentication & Security
     implementation(libs.ktor.server.auth)
     implementation(libs.ktor.server.auth.jwt)
+    implementation(libs.argon2)
+    implementation(libs.jwt)
 
     // Documentation
     implementation(libs.ktor.swagger.ui)
@@ -44,6 +49,7 @@ dependencies {
     // Database - Core
     implementation(libs.exposed.core)
     implementation(libs.exposed.jdbc)
+    implementation(libs.exposed.java.time)
 
     // Database - Drivers & Connection Pooling
     implementation(libs.postgresql)

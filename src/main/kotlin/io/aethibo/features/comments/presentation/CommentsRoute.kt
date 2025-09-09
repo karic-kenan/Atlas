@@ -17,7 +17,7 @@ fun Route.comment(
     createCommentUseCase: CreateCommentUseCase,
     deleteCommentUseCase: DeleteCommentUseCase,
 ) {
-    authenticate("jwt") {
+    authenticate("jwt-access") {
         // POST /api/articles/{slug}/comments
         post<Api.Articles.Slug.Comments> { resource ->
             createComment(resource.parent.slug, createCommentUseCase)
@@ -29,7 +29,7 @@ fun Route.comment(
         }
     }
 
-    authenticate("jwt", optional = true) {
+    authenticate("jwt-access", optional = true) {
         // GET /api/articles/{slug}/comments
         get<Api.Articles.Slug.Comments> { resource ->
             findComments(resource.parent.slug, findCommentsUseCase)

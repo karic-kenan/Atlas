@@ -3,11 +3,11 @@ package io.aethibo.features.users.presentation.navigation
 import io.aethibo.features.users.data.failure.getErrorMessage
 import io.aethibo.features.users.data.failure.toHttpStatus
 import io.aethibo.features.users.domain.mapper.toDomain
-import io.aethibo.features.users.domain.mapper.toUserResponseDto
+import io.aethibo.features.users.domain.mapper.toUpdatedResponseDto
 import io.aethibo.features.users.domain.model.User
 import io.aethibo.features.users.domain.usecase.UpdateUserUseCase
 import io.aethibo.features.users.presentation.model.UpdateUserWrapper
-import io.aethibo.features.users.presentation.model.UserWrapperResponseDto
+import io.aethibo.features.users.presentation.model.UserUpdatedWrapperResponseDto
 import io.ktor.http.*
 import io.ktor.server.auth.*
 import io.ktor.server.request.*
@@ -31,7 +31,7 @@ suspend fun RoutingContext.updateUser(
         ifRight = { updated ->
             call.respond(
                 status = HttpStatusCode.OK,
-                message = UserWrapperResponseDto(updated.toUserResponseDto())
+                message = UserUpdatedWrapperResponseDto(updated.toUpdatedResponseDto())
             )
         }
     )
