@@ -10,7 +10,6 @@ import io.aethibo.features.comments.domain.model.Comment
 import io.aethibo.features.comments.domain.repository.CommentRepository
 import io.aethibo.features.users.data.model.UserEntity
 import io.aethibo.features.users.domain.mapper.toUserDomain
-import io.aethibo.features.users.domain.model.User
 import org.jetbrains.exposed.v1.core.JoinType
 import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.v1.core.and
@@ -19,6 +18,7 @@ import org.jetbrains.exposed.v1.jdbc.insertAndGetId
 import org.jetbrains.exposed.v1.jdbc.selectAll
 
 class CommentRepositoryImpl : CommentRepository {
+
     private fun validateCommentInput(comment: Comment) {
         if (comment.body.isBlank()) throw CommentException.EmptyCommentBody
     }
@@ -35,80 +35,71 @@ class CommentRepositoryImpl : CommentRepository {
         if (commentId <= 0) throw CommentException.InvalidCommentId(commentId)
     }
 
-    private suspend fun findById(commentId: Long): Comment? {
-        return try {
-            validateCommentId(commentId)
-
-            dbQuery {
-                CommentEntity.selectAll()
-                    .where { CommentEntity.id eq commentId }
-                    .map { it.toCommentDomain(null) }
-                    .firstOrNull()
-            }
-        } catch (e: CommentException) {
-            throw e
-        } catch (e: Exception) {
-            throw CommentException.DatabaseError("findById", e)
+    private suspend fun findById(commentId: Long): Comment? = try {
+        validateCommentId(commentId)
+        dbQuery {
+            CommentEntity.selectAll()
+                .where { CommentEntity.id eq commentId }
+                .map { it.toCommentDomain(null) }
+                .firstOrNull()
         }
+    } catch (e: CommentException) {
+        throw e
+    } catch (e: Exception) {
+        throw CommentException.DatabaseError("findById", e)
     }
 
-    override suspend fun create(slugCommented: String, email: String, comment: Comment): Comment? {
-        return try {
-            validateSlug(slugCommented)
-            validateEmail(email)
-            validateCommentInput(comment)
+    override suspend fun create(slugCommented: String, email: String, comment: Comment): Comment? = try {
+        validateSlug(slugCommented)
+        validateEmail(email)
+        validateCommentInput(comment)
 
-            var user: User? = null
-            val commentId = dbQuery {
-                user = UserEntity.selectAll()
-                    .where { UserEntity.email eq email }
-                    .map { it.toUserDomain() }
-                    .firstOrNull() ?: throw CommentException.AuthorNotFound(email)
+        dbQuery {
+            val user = UserEntity.selectAll()
+                .where { UserEntity.email eq email }
+                .map { it.toUserDomain() }
+                .firstOrNull() ?: throw CommentException.AuthorNotFound(email)
 
-                val articleExists = ArticleEntity.selectAll()
-                    .where { slug eq slugCommented }
-                    .count() > 0
+            val articleExists = ArticleEntity.selectAll()
+                .where { slug eq slugCommented }
+                .count() > 0
 
-                if (!articleExists) throw CommentException.ArticleNotFound(slugCommented)
+            if (!articleExists) throw CommentException.ArticleNotFound(slugCommented)
 
-                CommentEntity.insertAndGetId { row ->
-                    row[body] = comment.body
-                    row[slug] = slugCommented
-                    row[author] = user.id!!
-                }.value
-            }
+            val commentId = CommentEntity.insertAndGetId { row ->
+                row[body] = comment.body
+                row[article] = slugCommented
+                row[author] = user.id!!
+            }.value
 
             findById(commentId)?.copy(author = user) ?: throw CommentException.CommentCreationFailed
-        } catch (e: CommentException) {
-            throw e
-        } catch (e: Exception) {
-            throw CommentException.DatabaseError("add", e)
         }
+    } catch (e: CommentException) {
+        throw e
+    } catch (e: Exception) {
+        throw CommentException.DatabaseError("create", e)
     }
 
-    override suspend fun find(slug: String): List<Comment> {
-        return try {
-            validateSlug(slug)
-
-            val comments = dbQuery {
-                CommentEntity.join(
-                    UserEntity,
-                    JoinType.INNER,
-                    additionalConstraint = { CommentEntity.author eq UserEntity.id }
-                )
-                    .selectAll()
-                    .where { CommentEntity.article eq slug }
-                    .map { it.toCommentDomain(it.toUserDomain()) }
-            }
+    override suspend fun find(slug: String): List<Comment> = try {
+        validateSlug(slug)
+        dbQuery {
+            val comments = CommentEntity.join(
+                otherTable = UserEntity,
+                joinType = JoinType.INNER,
+                additionalConstraint = { CommentEntity.author eq UserEntity.id }
+            )
+                .selectAll()
+                .where { CommentEntity.article eq slug }
+                .map { it.toCommentDomain(it.toUserDomain()) }
 
             if (comments.isEmpty()) throw CommentException.CommentsNotFoundForSlug(slug)
 
             comments
-        } catch (e: CommentException) {
-            throw e
-        } catch (e: Exception) {
-            throw CommentException.DatabaseError("findBySlug", e)
         }
+    } catch (e: CommentException) {
+        throw e
+    } catch (e: Exception) {
+        throw CommentException.DatabaseError("findBySlug", e)
     }
 
     override suspend fun delete(id: Long, slug: String) {
@@ -116,7 +107,6 @@ class CommentRepositoryImpl : CommentRepository {
             validateCommentId(id)
             validateSlug(slug)
 
-            // Verify comment exists
             findById(id) ?: throw CommentException.CommentNotFound(id)
 
             val deletedCount = dbQuery {
@@ -130,35 +120,6 @@ class CommentRepositoryImpl : CommentRepository {
             throw e
         } catch (e: Exception) {
             throw CommentException.DatabaseError("delete", e)
-        }
-    }
-
-    // Additional method you might want to add for authorization
-    suspend fun deleteWithAuthorization(id: Long, slug: String, userId: Long) {
-        try {
-            validateCommentId(id)
-            validateSlug(slug)
-
-            // Verify comment exists and user owns it
-            val comment = findById(id) ?: throw CommentException.CommentNotFound(id)
-
-            if (comment.author?.id != userId) {
-                throw CommentException.UnauthorizedCommentDeletion(id, userId)
-            }
-
-            val deletedCount = dbQuery {
-                CommentEntity.deleteWhere {
-                    CommentEntity.id eq id and (CommentEntity.article eq slug) and (CommentEntity.author eq userId)
-                }
-            }
-
-            if (deletedCount == 0) {
-                throw CommentException.CommentDeletionFailed
-            }
-        } catch (e: CommentException) {
-            throw e
-        } catch (e: Exception) {
-            throw CommentException.DatabaseError("deleteWithAuthorization", e)
         }
     }
 }

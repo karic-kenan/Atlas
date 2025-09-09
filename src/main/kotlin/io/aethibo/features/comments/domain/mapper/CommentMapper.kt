@@ -1,5 +1,6 @@
 package io.aethibo.features.comments.domain.mapper
 
+import io.aethibo.features.articles.domain.mapper.toUserResponseDto
 import io.aethibo.features.comments.data.model.CommentEntity
 import io.aethibo.features.comments.domain.model.Comment
 import io.aethibo.features.comments.presentation.model.CommentResponseDto
@@ -22,7 +23,7 @@ fun Comment.toCommentResponseDto(): CommentResponseDto = CommentResponseDto(
     body = this.body,
     createdAt = this.createdAt.toString(),
     updatedAt = this.updatedAt.toString(),
-//    author = this.author?.toAuthorDto() ?: AuthorDto("", "", "", false)
+    author = this.author?.toUserResponseDto()!!
 )
 
 fun CreateCommentRequest.toDomain(): Comment = Comment(

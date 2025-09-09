@@ -62,6 +62,7 @@ class UsersRepositoryImpl : UsersRepository {
             dbQuery {
                 UserEntity.selectAll()
                     .where { UserEntity.email eq email }
+                    .limit(1)
                     .map { it.toUserDomain() }
                     .firstOrNull()
             }
@@ -175,7 +176,7 @@ class UsersRepositoryImpl : UsersRepository {
                     }
                 ).select(UserEntity.id)
                     .where { UserEntity.email eq email }
-                    .empty().not()
+                    .count() > 0
             }
         } catch (e: UserException) {
             throw e
@@ -204,7 +205,7 @@ class UsersRepositoryImpl : UsersRepository {
             }
 
             dbQuery {
-                FollowsEntity.insert { row ->
+                FollowsEntity.insertIgnore { row ->
                     row[FollowsEntity.user] = userToFollow.id
                     row[follower] = user.id!!
                 }
