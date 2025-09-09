@@ -34,7 +34,7 @@ suspend fun refreshToken(
             raise(UserFailure.InvalidToken("Refresh token has been revoked"))
         }
 
-        val user = userRepository.findByEmail(userId)
+        val user = userRepository.findById(userId.toLong())
             ?: raise(UserFailure.UserNotFound("User not found"))
 
         // Check if user is still active
