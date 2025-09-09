@@ -4,7 +4,7 @@ import arrow.core.Either
 import arrow.core.raise.catch
 import arrow.core.raise.either
 import io.aethibo.core.security.JwtProvider
-import io.aethibo.core.utils.Email
+import io.aethibo.core.utils.UserId
 import io.aethibo.core.utils.getUserPermissions
 import io.aethibo.features.users.data.failure.UserException
 import io.aethibo.features.users.data.failure.UserFailure
@@ -12,19 +12,16 @@ import io.aethibo.features.users.data.failure.mapToFailure
 import io.aethibo.features.users.domain.model.User
 import io.aethibo.features.users.domain.repository.UsersRepository
 
-fun interface GetUserByEmailUseCase : suspend (Email) -> Either<UserFailure, User>
+fun interface GetUserByIdUseCase : suspend (UserId) -> Either<UserFailure, User>
 
-suspend fun getUserByEmail(
+suspend fun getUserById(
     userRepository: UsersRepository,
     jwtProvider: JwtProvider,
-    email: Email
+    id: UserId,
 ): Either<UserFailure, User> = either {
     catch({
-        val validEmail = email?.takeIf { it.isNotBlank() }
-            ?: raise(UserFailure.InvalidEmail(email.orEmpty()))
-
-        val user = userRepository.findByEmail(validEmail)
-            ?: raise(UserFailure.UserNotFoundByEmail(validEmail))
+        val user = userRepository.findById(id)
+            ?: raise(UserFailure.UserNotFound("User does not exist"))
 
         if (!user.isActive) {
             raise(UserFailure.UserInactive("User account is deactivated"))
