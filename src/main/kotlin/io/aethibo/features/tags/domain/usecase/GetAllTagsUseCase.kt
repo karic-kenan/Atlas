@@ -6,7 +6,7 @@ import arrow.core.raise.either
 import io.aethibo.features.tags.data.failure.TagException
 import io.aethibo.features.tags.data.failure.TagFailure
 import io.aethibo.features.tags.data.failure.mapToFailure
-import io.aethibo.features.tags.data.repository.TagsRepository
+import io.aethibo.features.tags.domain.repository.TagsRepository
 
 fun interface GetAllTagsUseCase : suspend () -> Either<TagFailure, List<String>>
 

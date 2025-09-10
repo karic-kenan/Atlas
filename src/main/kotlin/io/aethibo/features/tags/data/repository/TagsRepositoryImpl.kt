@@ -1,9 +1,9 @@
-package io.aethibo.features.tags.domain.repository
+package io.aethibo.features.tags.data.repository
 
 import io.aethibo.core.extensions.dbQuery
 import io.aethibo.features.tags.data.failure.TagException
 import io.aethibo.features.tags.data.model.TagEntity
-import io.aethibo.features.tags.data.repository.TagsRepository
+import io.aethibo.features.tags.domain.repository.TagsRepository
 import org.jetbrains.exposed.v1.core.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.v1.jdbc.deleteWhere
 import org.jetbrains.exposed.v1.jdbc.insert

@@ -24,6 +24,9 @@ sealed class CommentFailure : Failure.FeatureFailure() {
     // Validation errors
     data object EmptyCommentBody : CommentFailure()
     data class InvalidCommentId(val commentId: Long) : CommentFailure()
+    data class InvalidLimit(val identifier: Int) : CommentFailure()
+    data class InvalidOffset(val identifier: Long) : CommentFailure()
+    data class InvalidParameter(val identifier: String) : CommentFailure()
 
     // Permission errors
     data class UnauthorizedCommentDeletion(val commentId: Long, val userId: Long) : CommentFailure()
@@ -48,6 +51,9 @@ fun CommentFailure.getErrorMessage(): String = when (this) {
     is CommentFailure.UnauthorizedCommentDeletion -> "You are not authorized to delete this comment"
     is CommentFailure.DatabaseError -> "Database error during $operation: ${cause.message}"
     is CommentFailure.RepositoryInitializationFailed -> "Failed to initialize comment repository"
+    is CommentFailure.InvalidLimit -> "Invalid limit $identifier"
+    is CommentFailure.InvalidOffset -> "Invalid offset $identifier"
+    is CommentFailure.InvalidParameter -> "Invalid parameter $identifier"
 }
 
 fun CommentFailure.toHttpStatus(): HttpStatusCode = when (this) {
@@ -65,4 +71,7 @@ fun CommentFailure.toHttpStatus(): HttpStatusCode = when (this) {
     is CommentFailure.UnauthorizedCommentDeletion -> HttpStatusCode.Forbidden
     is CommentFailure.DatabaseError -> HttpStatusCode.InternalServerError
     is CommentFailure.RepositoryInitializationFailed -> HttpStatusCode.InternalServerError
+    is CommentFailure.InvalidLimit -> HttpStatusCode.BadRequest
+    is CommentFailure.InvalidOffset -> HttpStatusCode.BadRequest
+    is CommentFailure.InvalidParameter -> HttpStatusCode.BadRequest
 }

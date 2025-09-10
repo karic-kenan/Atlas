@@ -28,6 +28,8 @@ sealed class UserFailure : Failure.FeatureFailure() {
     data class InvalidUsername(val username: String) : UserFailure()
     data class InvalidPassword(val reason: String) : UserFailure()
     data class EmptyRequiredField(val fieldName: String) : UserFailure()
+    data class InvalidLimit(val reason: Int) : UserFailure()
+    data class InvalidOffset(val reason: Long) : UserFailure()
 
     // System/database errors
     data class DatabaseError(val operation: String, val cause: Throwable) : UserFailure()
@@ -54,6 +56,8 @@ fun UserFailure.getErrorMessage(): String = when (this) {
     is UserFailure.RepositoryInitializationFailed -> "Failed to initialize user repository"
     is UserFailure.UserInactive -> "User account is deactivated"
     is UserFailure.InvalidToken -> "Invalid token"
+    is UserFailure.InvalidLimit -> "Invalid limit $reason"
+    is UserFailure.InvalidOffset -> "Invalid offset $reason"
 }
 
 fun UserFailure.toHttpStatus(): HttpStatusCode = when (this) {
@@ -76,4 +80,6 @@ fun UserFailure.toHttpStatus(): HttpStatusCode = when (this) {
     is UserFailure.EmptyRequiredField -> HttpStatusCode.BadRequest
     is UserFailure.DatabaseError -> HttpStatusCode.InternalServerError
     is UserFailure.RepositoryInitializationFailed -> HttpStatusCode.InternalServerError
+    is UserFailure.InvalidLimit -> HttpStatusCode.BadRequest
+    is UserFailure.InvalidOffset -> HttpStatusCode.BadRequest
 }

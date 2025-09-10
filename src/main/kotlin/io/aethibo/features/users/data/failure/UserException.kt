@@ -23,6 +23,8 @@ sealed class UserException(message: String? = null) : Exception(message) {
     data class InvalidUsername(val username: String) : UserException()
     data class InvalidPassword(val reason: String) : UserException()
     data class EmptyRequiredField(val fieldName: String) : UserException()
+    data class InvalidLimit(val identifier: Int) : UserException()
+    data class InvalidOffset(val identifier: Long) : UserException()
 
     // System/database errors
     data class DatabaseError(val operation: String, override val cause: Throwable) : UserException()
@@ -47,4 +49,6 @@ fun UserException.mapToFailure(): UserFailure = when (this) {
     is UserException.EmptyRequiredField -> UserFailure.EmptyRequiredField(fieldName)
     is UserException.DatabaseError -> UserFailure.DatabaseError(operation, cause)
     is UserException.RepositoryInitializationFailed -> UserFailure.RepositoryInitializationFailed
+    is UserException.InvalidLimit -> UserFailure.InvalidLimit(identifier)
+    is UserException.InvalidOffset -> UserFailure.InvalidOffset(identifier)
 }

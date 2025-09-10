@@ -1,7 +1,7 @@
 package io.aethibo.features.tags.data.di
 
-import io.aethibo.features.tags.data.repository.TagsRepository
-import io.aethibo.features.tags.domain.repository.TagsRepositoryImpl
+import io.aethibo.features.tags.data.repository.TagsRepositoryImpl
+import io.aethibo.features.tags.domain.repository.TagsRepository
 import io.aethibo.features.tags.domain.usecase.*
 import org.koin.dsl.module
 

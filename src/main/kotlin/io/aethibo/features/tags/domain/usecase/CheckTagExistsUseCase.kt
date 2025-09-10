@@ -7,7 +7,7 @@ import io.aethibo.core.utils.TagName
 import io.aethibo.features.tags.data.failure.TagException
 import io.aethibo.features.tags.data.failure.TagFailure
 import io.aethibo.features.tags.data.failure.mapToFailure
-import io.aethibo.features.tags.data.repository.TagsRepository
+import io.aethibo.features.tags.domain.repository.TagsRepository
 
 fun interface CheckTagExistsUseCase : suspend (TagName) -> Either<TagFailure, Boolean>
 

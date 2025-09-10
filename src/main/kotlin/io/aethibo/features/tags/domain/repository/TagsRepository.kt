@@ -1,4 +1,4 @@
-package io.aethibo.features.tags.data.repository
+package io.aethibo.features.tags.domain.repository
 
 interface TagsRepository {
     suspend fun findAll(): List<String>

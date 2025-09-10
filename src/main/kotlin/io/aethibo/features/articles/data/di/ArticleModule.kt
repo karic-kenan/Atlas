@@ -92,5 +92,9 @@ val articlesModule = module {
         }
     }
 
-    single<ArticleRepository> { ArticleRepositoryImpl() }
+    single<ArticleRepository> {
+        ArticleRepositoryImpl(
+            meterRegistry = get()
+        )
+    }
 }

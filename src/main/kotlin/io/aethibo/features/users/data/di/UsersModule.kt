@@ -98,5 +98,9 @@ val usersModule = module {
         }
     }
 
-    single<UsersRepository> { UsersRepositoryImpl() }
+    single<UsersRepository> {
+        UsersRepositoryImpl(
+            meterRegistry = get()
+        )
+    }
 }

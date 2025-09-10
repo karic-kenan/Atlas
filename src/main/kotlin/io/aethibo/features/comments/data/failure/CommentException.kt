@@ -7,7 +7,7 @@ sealed class CommentException(message: String? = null) : Exception(message) {
 
     // Comment creation/update issues
     data object CommentCreationFailed : CommentException()
-    data object CommentUpdateFailed : CommentException()
+    data class CommentUpdateFailed(val identifier: Long) : CommentException()
     data object CommentDeletionFailed : CommentException()
 
     // Author related issues
@@ -21,6 +21,9 @@ sealed class CommentException(message: String? = null) : Exception(message) {
     // Validation errors
     data object EmptyCommentBody : CommentException()
     data class InvalidCommentId(val commentId: Long) : CommentException()
+    data class InvalidLimit(val identifier: Int) : CommentException()
+    data class InvalidOffset(val identifier: Long) : CommentException()
+    data class InvalidParameter(val identifier: String) : CommentException()
 
     // Permission errors
     data class UnauthorizedCommentDeletion(val commentId: Long, val userId: Long) : CommentException()
@@ -45,4 +48,7 @@ fun CommentException.mapToFailure(): CommentFailure = when (this) {
     is CommentException.UnauthorizedCommentDeletion -> CommentFailure.UnauthorizedCommentDeletion(commentId, userId)
     is CommentException.DatabaseError -> CommentFailure.DatabaseError(operation, cause)
     is CommentException.RepositoryInitializationFailed -> CommentFailure.RepositoryInitializationFailed
+    is CommentException.InvalidLimit -> CommentFailure.InvalidLimit(identifier)
+    is CommentException.InvalidOffset -> CommentFailure.InvalidOffset(identifier)
+    is CommentException.InvalidParameter -> CommentFailure.InvalidParameter(identifier)
 }

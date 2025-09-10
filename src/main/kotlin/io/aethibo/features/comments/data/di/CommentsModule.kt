@@ -36,5 +36,9 @@ val commentsModule = module {
         }
     }
 
-    single<CommentRepository> { CommentRepositoryImpl() }
+    single<CommentRepository> {
+        CommentRepositoryImpl(
+            meterRegistry = get()
+        )
+    }
 }
