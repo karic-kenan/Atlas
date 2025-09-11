@@ -3,6 +3,9 @@ plugins {
     alias(libs.plugins.ktor)
     alias(libs.plugins.kotlin.plugin.serialization)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.ktlint)
+    alias(libs.plugins.detekt)
+    alias(libs.plugins.kover)
 }
 
 group = "io.aethibo"
@@ -79,6 +82,9 @@ dependencies {
     testImplementation(libs.mockk)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+
+    detektPlugins(libs.detekt.formatting)
+    detektPlugins(libs.detekt.rules.libraries)
 }
 
 tasks.test {
@@ -87,4 +93,102 @@ tasks.test {
 
 ksp {
     arg("KOIN_CONFIG_CHECK", "true")
+}
+
+// Ktlint Configuration
+ktlint {
+    version.set("1.0.1")
+    debug.set(false)
+    verbose.set(true)
+    android.set(false)
+    outputToConsole.set(true)
+    outputColorName.set("RED")
+    ignoreFailures.set(false)
+    enableExperimentalRules.set(true)
+
+    filter {
+        exclude("**/generated/**")
+        include("**/kotlin/**")
+    }
+
+    reporters {
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.PLAIN)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.CHECKSTYLE)
+        reporter(org.jlleitschuh.gradle.ktlint.reporter.ReporterType.SARIF)
+    }
+}
+
+// Detekt Configuration
+detekt {
+    toolVersion = "1.23.3"
+    config.setFrom("$projectDir/config/detekt/detekt.yml")
+    buildUponDefaultConfig = true
+    allRules = false
+
+    reports {
+        html.required.set(true)
+        xml.required.set(true)
+        txt.required.set(true)
+        sarif.required.set(true)
+        md.required.set(true)
+    }
+}
+
+// Kover Configuration (Code Coverage)
+kover {
+    reports {
+        total {
+            html {
+                onCheck = true
+            }
+            xml {
+                onCheck = true
+            }
+
+            verify {
+                rule {
+                    minBound(80) // Minimum 80% coverage
+                }
+                rule {
+                    minBound(60, kotlinx.kover.gradle.plugin.dsl.CoverageUnit.BRANCH)
+                }
+            }
+
+            filters {
+                excludes {
+                    classes("**/Application*", "**/plugins/**")
+                }
+            }
+        }
+    }
+}
+
+// Custom tasks for quality checks
+tasks.register("qualityCheck") {
+    group = "verification"
+    description = "Run all quality checks"
+    dependsOn("ktlintCheck", "detekt", "koverVerify", "test")
+}
+
+tasks.register("qualityFix") {
+    group = "formatting"
+    description = "Fix all auto-fixable quality issues"
+    dependsOn("ktlintFormat", "detektAutoFix")
+}
+
+// Configure test task
+tasks.test {
+    useJUnitPlatform()
+    finalizedBy("koverHtmlReport")
+}
+
+// Make check depend on quality checks
+tasks.check {
+    dependsOn("qualityCheck")
+}
+
+// Configure detekt dependencies
+dependencies {
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.3")
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-rules-libraries:1.23.3")
 }
