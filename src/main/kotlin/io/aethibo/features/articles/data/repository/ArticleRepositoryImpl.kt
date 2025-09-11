@@ -26,7 +26,6 @@ import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.util.concurrent.ConcurrentHashMap
-import kotlin.system.measureTimeMillis
 
 data class CursorPagination(
     val cursor: String? = null,
@@ -49,7 +48,7 @@ data class PaginatedResult<T>(
 )
 
 class ArticleRepositoryImpl(
-    private val meterRegistry: MeterRegistry
+    meterRegistry: MeterRegistry
 ) : ArticleRepository {
 
     // --- Performance Monitoring ---
@@ -143,29 +142,6 @@ class ArticleRepositoryImpl(
             println("QUERY FAILED: $queryName failed after ${duration}ms - ${e.message}")
             throw e
         }
-    }
-
-    // Alternative approach using measureTimeMillis if you prefer
-    private suspend fun <T> timedDbQueryAlternative(
-        queryName: String,
-        block: suspend () -> T
-    ): T {
-        queryCounter.increment()
-
-        var result: T
-        val duration = measureTimeMillis {
-            result = dbQuery { block() }
-        }
-
-        // Record timing
-        dbTimer.record(duration, java.util.concurrent.TimeUnit.MILLISECONDS)
-
-        // Log slow queries (> 500ms)
-        if (duration > 500) {
-            println("SLOW QUERY DETECTED: $queryName took ${duration}ms")
-        }
-
-        return result
     }
 
     // --- Validation helpers ---

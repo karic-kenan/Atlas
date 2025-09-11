@@ -71,8 +71,18 @@ dependencies {
     implementation(libs.logback.classic)
 
     // Testing
+    testImplementation(libs.kotest.runner.junit5)
+    testImplementation(libs.kotest.assertions.core)
+    testImplementation(libs.kotest.framework.datatest)
+    testImplementation(libs.kotest.property)
+    testImplementation(libs.kotest.kotlin)
+    testImplementation(libs.mockk)
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+}
+
+tasks.test {
+    useJUnitPlatform()
 }
 
 ksp {
