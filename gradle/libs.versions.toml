@@ -18,6 +18,9 @@ micrometer = "1.16.0-M2"
 mockk = "1.13.8"
 postgresql = "42.7.5"
 slugify = "3.0.7"
+ktlint = "13.1.0"
+detekt = "1.23.8"
+kover = "0.9.1"
 
 [libraries]
 argon2 = { module = "de.mkammerer:argon2-jvm", version.ref = "argon2" }
@@ -65,9 +68,14 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 postgresql = { module = "org.postgresql:postgresql", version.ref = "postgresql" }
 slugify = { module = "com.github.slugify:slugify", version.ref = "slugify" }
+detekt-formatting = { module = "io.gitlab.arturbosch.detekt:detekt-formatting", version.ref = "detekt" }
+detekt-rules-libraries = { module = "io.gitlab.arturbosch.detekt:detekt-rules-libraries", version.ref = "detekt" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 kotlin-plugin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 ktor = { id = "io.ktor.plugin", version.ref = "ktor" }
+ktlint = { id = "org.jlleitschuh.gradle.ktlint", version.ref = "ktlint" }
+detekt = { id = "io.gitlab.arturbosch.detekt", version.ref = "detekt" }
+kover = { id = "org.jetbrains.kotlinx.kover", version.ref = "kover" }
