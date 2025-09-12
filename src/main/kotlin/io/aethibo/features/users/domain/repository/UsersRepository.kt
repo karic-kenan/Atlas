@@ -3,6 +3,7 @@ package io.aethibo.features.users.domain.repository
 import io.aethibo.features.users.domain.model.User
 
 interface UsersRepository {
+    suspend fun findById(id: Long): User?
     suspend fun findByEmail(email: String): User?
     suspend fun findByUsername(username: String): User?
     suspend fun create(user: User): Long

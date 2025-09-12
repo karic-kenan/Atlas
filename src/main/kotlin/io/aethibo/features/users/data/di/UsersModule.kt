@@ -1,23 +1,106 @@
 package io.aethibo.features.users.data.di
 
 import io.aethibo.features.users.data.repository.UsersRepositoryImpl
-import io.aethibo.features.users.domain.controller.UsersController
 import io.aethibo.features.users.domain.repository.UsersRepository
-import io.aethibo.features.users.domain.service.UsersService
-import io.aethibo.features.users.presentation.UsersControllerImpl
-import io.aethibo.features.users.presentation.UsersServiceImpl
+import io.aethibo.features.users.domain.usecase.*
 import org.koin.dsl.module
 
 val usersModule = module {
-    single<UsersRepository> { UsersRepositoryImpl() }
 
-    single<UsersService> {
-        UsersServiceImpl(
-            jwtProvider = get(),
-            cipher = get(),
-            userRepository = get()
-        )
+    factory<AuthenticateUserUseCase> {
+        AuthenticateUserUseCase { user ->
+            authenticateUser(
+                userRepository = get(),
+                jwtProvider = get(),
+                user = user
+            )
+        }
     }
 
-    single<UsersController> { UsersControllerImpl(get()) }
+    factory<CreateUserUseCase> {
+        CreateUserUseCase { user ->
+            createUser(
+                userRepository = get(),
+                jwtProvider = get(),
+                user = user
+            )
+        }
+    }
+
+    factory<UpdateUserUseCase> {
+        UpdateUserUseCase { email, user ->
+            updateUser(
+                userRepository = get(),
+                email = email,
+                user = user
+            )
+        }
+    }
+
+    factory<GetUserByIdUseCase> {
+        GetUserByIdUseCase { id ->
+            getUserById(
+                userRepository = get(),
+                jwtProvider = get(),
+                id = id
+            )
+        }
+    }
+
+    factory<GetUserByEmailUseCase> {
+        GetUserByEmailUseCase { email ->
+            getUserByEmail(
+                userRepository = get(),
+                jwtProvider = get(),
+                email = email
+            )
+        }
+    }
+
+    factory<GetProfileByUsernameUseCase> {
+        GetProfileByUsernameUseCase { email, username ->
+            getProfileByUsername(
+                userRepository = get(),
+                email = email,
+                username = username
+            )
+        }
+    }
+
+    factory<FollowProfileUseCase> {
+        FollowProfileUseCase { email, usernameToFollow ->
+            followProfile(
+                userRepository = get(),
+                email = email,
+                usernameToFollow = usernameToFollow
+            )
+        }
+    }
+
+    factory<UnfollowProfileUseCase> {
+        UnfollowProfileUseCase { email, usernameToUnfollow ->
+            unfollowProfile(
+                userRepository = get(),
+                email = email,
+                usernameToUnfollow = usernameToUnfollow
+            )
+        }
+    }
+
+    factory<RefreshTokenUseCase> {
+        RefreshTokenUseCase { refreshToken ->
+            refreshToken(
+                userRepository = get(),
+                jwtProvider = get(),
+                tokenBlacklistService = get(),
+                refreshToken = refreshToken
+            )
+        }
+    }
+
+    single<UsersRepository> {
+        UsersRepositoryImpl(
+            meterRegistry = get()
+        )
+    }
 }

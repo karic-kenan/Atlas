@@ -1,17 +1,44 @@
 package io.aethibo.features.comments.data.di
 
-import io.aethibo.features.comments.data.repository.CommentsRepositoryImpl
-import io.aethibo.features.comments.domain.controller.CommentsController
-import io.aethibo.features.comments.domain.repository.CommentsRepository
-import io.aethibo.features.comments.domain.service.CommentsService
-import io.aethibo.features.comments.presentation.CommentsControllerImpl
-import io.aethibo.features.comments.presentation.CommentsServiceImpl
+import io.aethibo.features.comments.data.repository.CommentRepositoryImpl
+import io.aethibo.features.comments.domain.repository.CommentRepository
+import io.aethibo.features.comments.domain.usecase.*
 import org.koin.dsl.module
 
 val commentsModule = module {
-    single<CommentsRepository> { CommentsRepositoryImpl() }
+    factory<CreateCommentUseCase> {
+        CreateCommentUseCase { email, slug, comment ->
+            createComment(
+                email = email,
+                slug = slug,
+                comment = comment,
+                commentsRepository = get(),
+            )
+        }
+    }
 
-    single<CommentsService> { CommentsServiceImpl(get()) }
+    factory<FindCommentsUseCase> {
+        FindCommentsUseCase { slug ->
+            findComments(
+                slug = slug,
+                commentsRepository = get()
+            )
+        }
+    }
 
-    single<CommentsController> { CommentsControllerImpl(get()) }
+    factory<DeleteCommentUseCase> {
+        DeleteCommentUseCase { commentId, slug ->
+            deleteComment(
+                commentId = commentId,
+                slug = slug,
+                commentsRepository = get()
+            )
+        }
+    }
+
+    single<CommentRepository> {
+        CommentRepositoryImpl(
+            meterRegistry = get()
+        )
+    }
 }

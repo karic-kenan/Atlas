@@ -1,53 +1,56 @@
 package io.aethibo.core.navigation
 
-interface AtlasDestination {
-    val route: String
-}
+import io.ktor.resources.*
 
-object Users : AtlasDestination {
-    override val route: String = "users"
-}
+@Resource("/api")
+class Api {
+    @Resource("users")
+    class Users(val parent: Api = Api()) {
+        @Resource("login")
+        class Login(val parent: Users = Users())
+    }
 
-object User : AtlasDestination {
-    override val route: String = "user"
-}
+    @Resource("user")
+    class User(val parent: Api = Api())
 
-object Login : AtlasDestination {
-    override val route: String = "login"
-}
+    @Resource("profiles/{username}")
+    class Profile(val parent: Api = Api(), val username: String) {
+        @Resource("follow")
+        class Follow(val parent: Profile)
+    }
 
-object Profile : AtlasDestination {
-    override val route: String = "profiles/{username}"
-}
+    @Resource("articles")
+    class CreateArticle(val parent: Api = Api())
 
-object Follow : AtlasDestination {
-    override val route: String = "follow"
-}
+    @Resource("articles")
+    class Articles(
+        val parent: Api = Api(),
+        val tag: String? = null,
+        val author: String? = null,
+        val favorited: String? = null,
+        val limit: Int = 20,
+        val offset: Long = 0
+    ) {
+        @Resource("feed")
+        class Feed(
+            val parent: Articles = Articles(),
+            val limit: Int = 20,
+            val offset: Long = 0
+        )
 
-object Articles : AtlasDestination {
-    override val route: String = "articles"
-}
+        @Resource("{slug}")
+        class Slug(val parent: Articles = Articles(), val slug: String) {
+            @Resource("comments")
+            class Comments(val parent: Slug) {
+                @Resource("{commentId}")
+                class CommentId(val parent: Comments, val commentId: Long)
+            }
 
-object Feed : AtlasDestination {
-    override val route: String = "feed"
-}
+            @Resource("favorite")
+            class Favorite(val parent: Slug)
+        }
+    }
 
-object Slug : AtlasDestination {
-    override val route: String = "{slug}"
-}
-
-object Comments : AtlasDestination {
-    override val route: String = "comments"
-}
-
-object CommentId : AtlasDestination {
-    override val route: String = "{commentId}"
-}
-
-object Favorite : AtlasDestination {
-    override val route: String = "favorite"
-}
-
-object Tags : AtlasDestination {
-    override val route: String = "tags"
+    @Resource("tags")
+    class Tags(val parent: Api = Api())
 }
