@@ -6,7 +6,7 @@ import io.aethibo.features.articles.data.failure.toHttpStatus
 import io.aethibo.features.articles.domain.mapper.toArticleResponseDto
 import io.aethibo.features.articles.domain.mapper.toDomain
 import io.aethibo.features.articles.domain.usecase.UpdateArticleUseCase
-import io.aethibo.features.articles.presentation.model.UpdateArticleRequest
+import io.aethibo.features.articles.presentation.model.UpdateArticleWrapper
 import io.ktor.http.*
 import io.ktor.server.request.*
 import io.ktor.server.response.*
@@ -16,8 +16,8 @@ suspend fun RoutingContext.updateArticle(
     slug: Slug,
     updateArticleUseCase: UpdateArticleUseCase
 ) {
-    val request = call.receive<UpdateArticleRequest>()
-    val result = updateArticleUseCase(slug, request.toDomain())
+    val request = call.receive<UpdateArticleWrapper>()
+    val result = updateArticleUseCase(slug, request.article.toDomain())
 
     result.fold(
         ifLeft = { failure ->

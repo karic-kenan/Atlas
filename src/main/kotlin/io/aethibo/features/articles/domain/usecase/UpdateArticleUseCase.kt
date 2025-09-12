@@ -20,16 +20,18 @@ suspend fun updateArticle(
     catch({
         val existingArticle = articleRepository.getBySlug(slug)
             ?: raise(ArticleFailure.ArticleNotFound(slug))
+        println("Article::$article")
+        println("Existing article::$existingArticle")
 
-        articleRepository.update(
-            slug, existingArticle.copy(
-                slug = slug,
-                title = article.title,
-                description = article.description,
-                body = article.body,
-                tagList = article.tagList
-            )
-        ) ?: raise(ArticleFailure.ArticleUpdateFailed)
+        val updatedArticle = existingArticle.copy(
+            title = article.title ?: existingArticle.title,
+            description = article.description ?: existingArticle.description,
+            body = article.body ?: existingArticle.body,
+            tagList = article.tagList ?: existingArticle.tagList
+        )
+
+        articleRepository.update(slug, updatedArticle)
+            ?: raise(ArticleFailure.ArticleUpdateFailed)
     }) { exception ->
         val failure = when (exception) {
             is ArticleException -> exception.mapToFailure()
