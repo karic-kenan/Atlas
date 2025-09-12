@@ -25,6 +25,11 @@ data class CreateArticleRequest(
 )
 
 @Serializable
+data class UpdateArticleWrapper(
+    val article: UpdateArticleRequest
+)
+
+@Serializable
 data class UpdateArticleRequest(
     val title: String? = null,
     val description: String? = null,
