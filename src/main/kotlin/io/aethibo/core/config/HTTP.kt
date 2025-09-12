@@ -22,7 +22,7 @@ fun Application.configureHTTP() {
 
         route("swagger") {
             swaggerUI("/api.json") {
-                // Add configuration for this Swagger UI "instance" here.
+                filter = true
             }
         }
     }
