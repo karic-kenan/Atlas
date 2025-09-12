@@ -156,7 +156,7 @@ fun Route.profile(
     }
 
     authenticate("jwt-access", optional = true) {
-        // GET /api/profiles/{username} - Get User Profile
+        // GET /api/profiles/celeb_{USERNAME} - Get User Profile
         get<Api.Profile>({
             description = """
                 Get a user's public profile information including their bio, image, and follow status.
